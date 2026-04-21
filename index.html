@@ -150,6 +150,9 @@
   .btn-fb:hover { background: #e8f1fd; }
   .btn-ig { color: #C13584; border-color: #f0bbd9; }
   .btn-ig:hover { background: #fce8f2; }
+  .btn-both { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+  .btn-both:hover { background: #333; }
+  .btn-both:disabled { opacity: 0.4; cursor: not-allowed; }
 
   /* Logg */
   .divider { border: none; border-top: 1px solid #e5e5e3; margin: 2rem 0; }
@@ -240,8 +243,9 @@
   <div class="actions">
     <button class="btn btn-primary" id="btnGen" onclick="generate()">Generera inlägg</button>
     <button class="btn" id="btnRegen" onclick="generate()" style="display:none">Generera nytt</button>
-    <button class="btn btn-fb" id="btnFB" onclick="publish('fb')" style="display:none" disabled>Publicera på Facebook</button>
-    <button class="btn btn-ig" id="btnIG" onclick="publish('ig')" style="display:none" disabled>Publicera på Instagram</button>
+    <button class="btn btn-both" id="btnBoth" onclick="publish('both')" style="display:none" disabled>Publicera på FB + Instagram</button>
+    <button class="btn btn-fb" id="btnFB" onclick="publish('fb')" style="display:none" disabled>Bara Facebook</button>
+    <button class="btn btn-ig" id="btnIG" onclick="publish('ig')" style="display:none" disabled>Bara Instagram</button>
   </div>
 
   <hr class="divider" />
@@ -286,28 +290,28 @@ const KUND_PROJEKT = [
 ];
 
 // ── Bildbibliotek ──────────────────────────────────────────────────
-// Bildbibliotek – 40 husmodeller + 38 garagemodeller
-// Hämtat från mellbyhome.com/sv/alla-modeller/ – inkl. namn, projektnummer och beskrivning
+// Bildbibliotek – verkliga URL:er hämtade direkt från mellbyhome.com/sv/alla-modeller/
+// 40 modeller – hämtade live från mellbyhome.com/sv/alla-modeller/
 const HUS_BILDER = [
-  { name: 'Enplanshus', nr: '31332', src: 'https://www.mellbyhome.com/app/uploads/2026/03/31332-bild1-1024x546.png', desc: 'Enplanshus med vidbyggt dubbelgarage. Snyggt och praktiskt med rymligt dubbelgarage, stor tvättstuga och förråd. Allt innanför husets väggar!' },
+  { name: 'Enplanshus', nr: '31332', src: 'https://www.mellbyhome.com/app/uploads/2026/03/31332-bild1-1024x546.png', desc: 'Enplanshus med vidbyggt dubbelgarage. Snyggt och praktiskt med rymligt dubbelgarage, stor tvättstuga och förråd.' },
   { name: 'Enplanshus', nr: '31384', src: 'https://www.mellbyhome.com/app/uploads/2026/03/31384-Bild2-1024x555.png', desc: 'Enplanshus i modern stil med smart planlösning och 4 sovrum. Snyggt, praktiskt och modernt familjehus.' },
-  { name: 'Enplanshus', nr: '30740', src: 'https://www.mellbyhome.com/app/uploads/2026/01/30740-bild1-1024x617.png', desc: 'Modernt enplanshus med vacker symmetri. Naturligt trä-färgad panel med hattläkt, bandat plåttak och antracitgrå dubbeldörr. Vackert och välplanerat!' },
-  { name: 'Enplanshus', nr: '30737', src: 'https://www.mellbyhome.com/app/uploads/2026/01/30737-Bild1-AI-1024x617.png', desc: 'Enplanshus i klassisk stil med modern komfort. Välplanerat med smarta lösningar för hela familjen.' },
-  { name: 'Attefallshus', nr: '30076', src: 'https://www.mellbyhome.com/app/uploads/2025/11/30076-bild-1024x640.png', desc: 'Kompakt attefallshus med smart planlösning. Perfekt som gäststuga, uthyrningsobjekt eller litet permanentboende.' },
+  { name: 'Enplanshus', nr: '30740', src: 'https://www.mellbyhome.com/app/uploads/2026/01/30740-bild1-1024x617.png', desc: 'Modernt enplanshus med vacker symmetri. Naturligt trä-färgad panel med hattläkt, bandat plåttak och antracitgrå dubbeldörr.' },
+  { name: 'Enplanshus', nr: '30737', src: 'https://www.mellbyhome.com/app/uploads/2026/01/30737-Bild1-AI-1024x617.png', desc: 'Enplanshus i klassisk stil med två gavlar, rakt takfall och en genuin känsla av skandinaviskt husbyggande.' },
+  { name: 'Attefallshus', nr: '30076', src: 'https://www.mellbyhome.com/app/uploads/2025/11/30076-bild-1024x640.png', desc: 'Attefallshus 30 kvm med öppen planlösning. Perfekt gästhus, uthyrningsobjekt eller litet permanentboende.' },
   { name: 'Attefallshus', nr: '30060', src: 'https://www.mellbyhome.com/app/uploads/2025/11/30060-Bild-AI2-1-1024x747.png', desc: 'Modernt attefallshus med öppen planlösning och stora fönster. Ljust och välkomnande hem på liten yta.' },
-  { name: 'Attefallshus', nr: '30040', src: 'https://www.mellbyhome.com/app/uploads/2025/11/30040-bild-AI-2-1024x796.png', desc: 'Stilrent attefallshus med hög standard. Maximalt utnyttjad yta med smarta förvaringslösningar.' },
-  { name: 'Attefallshus', nr: '30039', src: 'https://www.mellbyhome.com/app/uploads/2025/10/30039-Bild-AI-1024x904.png', desc: 'Litet hus med stor känsla. Perfekt som komplement på tomten eller för den som vill bo enkelt och smart.' },
-  { name: 'Attefallshus', nr: '30038', src: 'https://www.mellbyhome.com/app/uploads/2025/10/30038-Bild-AI-1024x796.png', desc: 'Välplanerat attefallshus med öppen yta och plats för det viktigaste. Enkelt, snyggt och funktionellt.' },
-  { name: 'Attefallshus', nr: '29945', src: 'https://www.mellbyhome.com/app/uploads/2025/10/29945-Bild-AI-1024x683.png', desc: 'Modernt och kompakt attefallshus med smart layout. Bra val för den som vill ha mer utrymme på tomten.' },
+  { name: 'Attefallshus', nr: '30040', src: 'https://www.mellbyhome.com/app/uploads/2025/11/30040-bild-AI-2-1024x796.png', desc: 'Stilrent attefallshus med sadeltak och panelfasad. Maximalt utnyttjad yta med smarta lösningar.' },
+  { name: 'Attefallshus', nr: '30039', src: 'https://www.mellbyhome.com/app/uploads/2025/10/30039-Bild-AI-1024x904.png', desc: 'Attefallshus med pulpettak och modern design. Litet hus med stor känsla – perfekt på tomten.' },
+  { name: 'Attefallshus', nr: '30038', src: 'https://www.mellbyhome.com/app/uploads/2025/10/30038-Bild-AI-1024x796.png', desc: 'Välplanerat attefallshus med modern fasad. Enkelt, snyggt och funktionellt.' },
+  { name: 'Attefallshus', nr: '29945', src: 'https://www.mellbyhome.com/app/uploads/2025/10/29945-Bild-AI-1024x683.png', desc: 'Modernt och kompakt attefallshus med smart layout. Bra val för extra boyta på tomten.' },
   { name: 'Enplanshus U-form', nr: '27629', src: 'https://www.mellbyhome.com/app/uploads/2025/02/27629-Bild1-1024x619.jpg', desc: 'Enplanshus i U-form med inbyggd inglasad uteplats. Fantastiskt för familjer som vill ha skyddad utomhusmiljö direkt från vardagsrummet.' },
   { name: 'Enplanshus/Fritidshus', nr: '23445', src: 'https://www.mellbyhome.com/app/uploads/2024/05/23445-Bild1-1024x640.jpg', desc: 'Flexibelt hus som passar både som permanentboende och fritidshus. Tidlös design med praktisk planlösning.' },
   { name: 'Enplanshus/Fritidshus', nr: '16952', src: 'https://www.mellbyhome.com/app/uploads/2024/05/16952-Bild1-1024x619.jpg', desc: 'Klassiskt enplanshus med karaktär. Passar lika bra som sommarboende som helårsbostad.' },
-  { name: 'Enplanshus U-form', nr: '23201', src: 'https://www.mellbyhome.com/app/uploads/2024/05/23201-Bild1-1024x619.jpg', desc: 'Enplanshus i U-form med skyddad innergård. Perfekt för familjer som vill ha en privat utomhusmiljö.' },
-  { name: 'Enplanshus', nr: '22039', src: 'https://www.mellbyhome.com/app/uploads/2024/01/22039-Bild1-1024x619.jpg', desc: 'Modernt enplanshus med öppen planlösning och stora fönster mot trädgården. Ljust och luftigt hem.' },
-  { name: 'Enplanshus', nr: '21985', src: 'https://www.mellbyhome.com/app/uploads/2023/11/21985-Bild1-1024x619.jpg', desc: 'Välplanerat enplanshus med plats för hela familjen. Praktisk layout med gott om förvaringsutrymme.' },
-  { name: 'Enplanshus/Fritidshus', nr: '21047', src: 'https://www.mellbyhome.com/app/uploads/2023/11/21047-Bild1-1024x619.jpg', desc: 'Charmigt hus med tidlös design. Perfekt som fritidshus nära naturen eller permanentboende på landet.' },
-  { name: 'Enplanshus', nr: '20842', src: 'https://www.mellbyhome.com/app/uploads/2023/11/20842-Bild1-1024x619.jpg', desc: 'Funktionellt enplanshus med smart planlösning. Bra val för den moderna familjen som vill ha allt på ett plan.' },
-  { name: 'Radhus Enplan', nr: '16966', src: 'https://www.mellbyhome.com/app/uploads/2023/11/16966-Bild1-1024x619.jpg', desc: 'Snyggt enplans radhus med privat uteplats. Perfekt för bostadsrättsföreningar och byggherrar.' },
+  { name: 'Enplanshus U-form', nr: '23201', src: 'https://www.mellbyhome.com/app/uploads/2024/05/23201-Bild1-1024x619.jpg', desc: 'Enplanshus i U-form med skyddad innergård. Perfekt för familjer som vill ha privat utomhusmiljö.' },
+  { name: 'Enplanshus', nr: '22039', src: 'https://www.mellbyhome.com/app/uploads/2024/01/22039-Bild1-1024x619.jpg', desc: 'Modernt enplanshus med öppen planlösning och stora fönster mot trädgården.' },
+  { name: 'Enplanshus', nr: '21985', src: 'https://www.mellbyhome.com/app/uploads/2023/11/21985-Bild1-1024x619.jpg', desc: 'Välplanerat enplanshus med plats för hela familjen och gott om förvaringsutrymme.' },
+  { name: 'Enplanshus/Fritidshus', nr: '21047', src: 'https://www.mellbyhome.com/app/uploads/2023/11/21047-Bild1-1024x619.jpg', desc: 'Charmigt hus med tidlös design. Perfekt som fritidshus nära naturen eller permanentboende.' },
+  { name: 'Enplanshus', nr: '20842', src: 'https://www.mellbyhome.com/app/uploads/2023/11/20842-Bild1-1024x619.jpg', desc: 'Funktionellt enplanshus med smart planlösning. Bra val för den moderna familjen.' },
+  { name: 'Radhus Enplan', nr: '16966', src: 'https://www.mellbyhome.com/app/uploads/2023/11/16966-Bild1-1024x619.jpg', desc: 'Snyggt enplans radhus med privat uteplats. Perfekt för bostadsrättsföreningar.' },
   { name: 'Parhus Enplan', nr: '16967', src: 'https://www.mellbyhome.com/app/uploads/2023/11/16967-Bild1-1024x619.jpg', desc: 'Modernt parhus i enplansutförande. Smart investering – bo i ena halvan och hyr ut den andra.' },
   { name: 'Enplanshus/Fritidshus', nr: '19049', src: 'https://www.mellbyhome.com/app/uploads/2023/11/19049-Bild1-1024x619.jpg', desc: 'Klassiskt fritidshus med modern standard. Njut av naturen utan att kompromissa med komforten.' },
   { name: 'Enplanshus med garage', nr: '19038', src: 'https://www.mellbyhome.com/app/uploads/2023/11/19038-Bild1-1024x619.jpg', desc: 'Enplanshus med integrerat garage. Smidig lösning där hus och garage bildar en sammanhängande helhet.' },
@@ -315,37 +319,38 @@ const HUS_BILDER = [
   { name: 'Enplanshus', nr: '18356', src: 'https://www.mellbyhome.com/app/uploads/2023/02/18356-Bild1-1024x619.jpg', desc: 'Stilfullt enplanshus med hög takhöjd och öppen planlösning. Ljust och rymligt hem för familjen.' },
   { name: 'Enplanshus', nr: '18732', src: 'https://www.mellbyhome.com/app/uploads/2023/02/18732-Bild1-1024x619.jpg', desc: 'Modernt enplanshus med välbalanserad planlösning. Stor vardagsrumsdel med öppen koppling till köket.' },
   { name: 'Enplanshus', nr: '17704', src: 'https://www.mellbyhome.com/app/uploads/2023/01/17704-Bild1-1024x619.jpg', desc: 'Klassiskt enplanshus med tidlös charm. Välgenomtänkt layout med plats för hela familjen.' },
-  { name: 'Enplanshus', nr: '18085', src: 'https://www.mellbyhome.com/app/uploads/2023/01/18085-Bild-1024x512.jpg', desc: 'Modernt enplanshus med sadeltak och genomtänkt planlösning. Bra storlek för den moderna familjen.' },
+  { name: 'Enplanshus', nr: '18085', src: 'https://www.mellbyhome.com/app/uploads/2023/01/18085-Bild-1024x512.jpg', desc: 'Modernt enplanshus med sadeltak och genomtänkt planlösning.' },
   { name: 'Enplanshus', nr: '17615', src: 'https://www.mellbyhome.com/app/uploads/2022/11/17615-Bild-1-AI-1024x617.png', desc: 'Enplanshus med modern fasad och smart interiör. Energieffektivt och välplanerat för bekvämt boende.' },
   { name: 'Enplanshus', nr: '16955', src: 'https://www.mellbyhome.com/app/uploads/2022/11/16955-Bild1-1024x617.png', desc: 'Välplanerat enplanshus med attraktiv exteriör. Perfekt storlek för par och mindre familjer.' },
   { name: 'Enplanshus', nr: '16684', src: 'https://www.mellbyhome.com/app/uploads/2022/09/16684-Bild1-AI-1024x617.png', desc: 'Praktiskt enplanshus med genomtänkt planlösning och goda förvaringslösningar.' },
-  { name: '1,5-planshus', nr: '27797', src: 'https://www.mellbyhome.com/app/uploads/2025/04/27797-Bild1-1024x619.jpg', desc: 'Stilfullt 1,5-planshus med kupa och stora fönster. Familjehus med gott om utrymme och en planlösning som skapar trivsel.' },
-  { name: '1,5-planshus', nr: '21249', src: 'https://www.mellbyhome.com/app/uploads/2023/11/21249-bild1-1024x619.jpg', desc: '1,5-planshus med takkupa och gott om utrymme för familjen. Fem sovrum, god förvaring – vackert och praktiskt hem med klassisk charm.' },
+  { name: '1,5-planshus', nr: '27797', src: 'https://www.mellbyhome.com/app/uploads/2025/04/27797-Bild1-1024x619.jpg', desc: 'Stilfullt 1,5-planshus med kupa och stora fönster. Familjehus med gott om utrymme och trivselfullt.' },
+  { name: '1,5-planshus', nr: '21249', src: 'https://www.mellbyhome.com/app/uploads/2023/11/21249-bild1-1024x619.jpg', desc: '1,5-planshus med takkupa och gott om utrymme för familjen. Fem sovrum och god förvaring.' },
   { name: '1,5-planshus', nr: '19428', src: 'https://www.mellbyhome.com/app/uploads/2023/11/19428-Bild1-1024x619.jpg', desc: 'Klassiskt 1,5-planshus med charmig takkupa. Maximalt utnyttjat utrymme på en smart yta.' },
-  { name: 'Parhus 1,5-plan', nr: '18377', src: 'https://www.mellbyhome.com/app/uploads/2023/02/18377-Bild1-1024x619.jpg', desc: 'Modernt parhus i 1,5-plansutförande. Karaktärsfull exteriör med genomtänkt planlösning i båda halvorna.' },
-  { name: '2-planshus', nr: '28238', src: 'https://www.mellbyhome.com/app/uploads/2024/09/28238-Bild1-1024x619.jpg', desc: '2-planshus med vidbyggt garage. Stora fönsterpartier på baksidan skapar fantastisk utsikt mot tomten. Boyta 183 kvm, garaget 49 kvm.' },
-  { name: 'Parhus 2-plan', nr: '16964', src: 'https://www.mellbyhome.com/app/uploads/2024/05/16964-bild-AI-1024x640.png', desc: 'Modernt parhus i tvåplansutförande. Snygg exteriör och välfungerande planlösning – smart investering.' },
-  { name: 'Tvåplanshus', nr: '22171', src: 'https://www.mellbyhome.com/app/uploads/2023/11/22171-Bild1-1024x619.jpg', desc: 'Modernt tvåplanshus med stilren fasad. Rymligt och välplanerat med plats för hela familjen på två plan.' },
+  { name: 'Parhus 1,5-plan', nr: '18377', src: 'https://www.mellbyhome.com/app/uploads/2023/02/18377-Bild1-1024x619.jpg', desc: 'Modernt parhus i 1,5-plansutförande. Karaktärsfull exteriör med genomtänkt planlösning.' },
+  { name: '2-planshus', nr: '28238', src: 'https://www.mellbyhome.com/app/uploads/2024/09/28328-Bild2-1024x619.jpg', desc: '2-planshus med vidbyggt garage. Stora fönsterpartier skapar fantastisk utsikt mot tomten. 183 kvm boyta.' },
+  { name: 'Parhus 2-plan', nr: '16964', src: 'https://www.mellbyhome.com/app/uploads/2024/05/16964-bild-AI-1024x640.png', desc: 'Modernt parhus i tvåplansutförande. Snygg exteriör och välfungerande planlösning.' },
+  { name: 'Tvåplanshus', nr: '22171', src: 'https://www.mellbyhome.com/app/uploads/2023/11/22171-Bild1-1024x619.jpg', desc: 'Modernt tvåplanshus med stilren fasad. Rymligt och välplanerat med plats för hela familjen.' },
   { name: 'Radhus', nr: '16963', src: 'https://www.mellbyhome.com/app/uploads/2023/03/16963-Bild-1-1024x512.jpg', desc: 'Modernt radhus med smart planlösning. Perfekt för byggherrar och bostadsrättsföreningar.' },
-  { name: 'Tvåplanshus', nr: '18334', src: 'https://www.mellbyhome.com/app/uploads/2023/02/18334-Bild-1024x619.jpg', desc: 'Klassiskt tvåplanshus med modern komfort. Välplanerat hem med sovrum på övervåningen och sociala ytor på nedervåningen.' },
-  { name: 'Herrgård', nr: '18449', src: 'https://www.mellbyhome.com/app/uploads/2023/02/18449-Bild2-1024x619.jpg', desc: 'Imponerande herrgårdsmodell med klassisk arkitektur och modernt innanmäte. Stor boendeyta med gott om utrymme.' }
+  { name: 'Tvåplanshus', nr: '18334', src: 'https://www.mellbyhome.com/app/uploads/2023/02/18334-Bild-1024x619.jpg', desc: 'Klassiskt tvåplanshus med modern komfort. Sovrum på övervåning, sociala ytor på nedervåning.' },
+  { name: 'Herrgård', nr: '18449', src: 'https://www.mellbyhome.com/app/uploads/2023/02/18449-Bild2-1024x619.jpg', desc: 'Imponerande herrgårdsmodell med klassisk arkitektur och modernt innanmäte. Stor boendeyta.' }
 ];
 
+// 38 modeller – hämtade live från mellbyhome.com/sv/alla-modeller/
 const GARAGE_BILDER = [
-  { name: 'Attefallsgarage', nr: '30555', src: 'https://www.mellbyhome.com/app/uploads/2025/12/30555-Bild1-AI-1024x683.png', desc: 'Modernt attefallsgarage med snygg fasad. Maximalt tillåten yta utan bygglov. Perfekt komplement till tomten.' },
-  { name: 'Attefallsgarage', nr: '30577', src: 'https://www.mellbyhome.com/app/uploads/2025/12/30577-bild1-AI-1024x796.png', desc: 'Stilrent attefallsgarage med modern design. Rymligt och praktiskt utan krav på bygglov.' },
-  { name: 'Attefallsgarage', nr: '30556', src: 'https://www.mellbyhome.com/app/uploads/2025/12/30556-Bild1-AI-1024x640.png', desc: 'Kompakt attefallsgarage med smart layout. Plats för bilen och förvaringen – allt inom lagens gränser.' },
-  { name: 'Attefallsgarage', nr: '30576', src: 'https://www.mellbyhome.com/app/uploads/2025/12/30576-Bild1-AI-1024x617.png', desc: 'Klassiskt attefallsgarage med tidlös design. Enkelt att bygga, svårt att sluta beundra.' },
-  { name: 'Attefallsgarage', nr: '30253', src: 'https://www.mellbyhome.com/app/uploads/2025/10/30253-Bild1-AI-1024x617.png', desc: 'Modernt attefallsgarage med ren linjeföring. Passar alla husstiler och tomtstorlekar.' },
-  { name: 'Attefallsgarage', nr: '30251', src: 'https://www.mellbyhome.com/app/uploads/2025/10/30251-Bild1-AI-1024x617.png', desc: 'Välplanerat attefallsgarage med smart utnyttjad yta. Snabb och enkel uppförning utan bygglov.' },
+  { name: 'Attefallsgarage', nr: '30555', src: 'https://www.mellbyhome.com/app/uploads/2025/12/30555-Bild1-AI-1024x683.png', desc: 'Attefallsgarage i ladhusstil. Kort takfot och stående spårpanel.' },
+  { name: 'Attefallsgarage', nr: '30577', src: 'https://www.mellbyhome.com/app/uploads/2025/12/30577-bild1-AI-1024x796.png', desc: 'Attefallsgarage med pulpettak och takskjutport med motor. Plats för arbetsbänk och förvaring.' },
+  { name: 'Attefallsgarage', nr: '30556', src: 'https://www.mellbyhome.com/app/uploads/2025/12/30556-Bild1-AI-1024x640.png', desc: 'Attefallsgarage 50 kvm med valmat tak och spröjsade fönster. Bred takskjutport.' },
+  { name: 'Attefallsgarage', nr: '30576', src: 'https://www.mellbyhome.com/app/uploads/2025/12/30576-Bild1-AI-1024x617.png', desc: 'Attefallsgarage 30 kvm med slagport. Plats för bilen och hängande förvaring utmed väggarna.' },
+  { name: 'Attefallsgarage', nr: '30253', src: 'https://www.mellbyhome.com/app/uploads/2025/10/30253-Bild1-AI-1-1024x683.png', desc: 'Modernt attefallsgarage med ren linjeföring. Passar alla husstiler och tomtstorlekar.' },
+  { name: 'Attefallsgarage', nr: '30251', src: 'https://www.mellbyhome.com/app/uploads/2025/10/30251-Bild1-AI-1024x617.png', desc: 'Välplanerat attefallsgarage utan bygglov. Snabb och enkel uppförning.' },
   { name: 'Carport och Garage', nr: '30028', src: 'https://www.mellbyhome.com/app/uploads/2025/09/30028-Bild1-AI-1024x640.png', desc: 'Kombinerad carport och garage – det bästa av två världar. Överdäckning för en bil och stängt garage för en annan.' },
-  { name: 'Dubbelgarage', nr: '28334', src: 'https://www.mellbyhome.com/app/uploads/2025/09/28334-Bild1-AI-1024x640.png', desc: 'Modernt dubbelgarage med snygg fasad. Gott om plats för två bilar, cyklar och allt annat som behöver tak.' },
-  { name: 'Enkelgarage', nr: '19976', src: 'https://www.mellbyhome.com/app/uploads/2023/11/19976-Bild1-1024x619.jpg', desc: 'Klassiskt enkelgarage med modern känsla. Plats för bilen och lite extra förvaring.' },
-  { name: 'Dubbelgarage', nr: '19864', src: 'https://www.mellbyhome.com/app/uploads/2023/11/19864-Bild1-1024x619.jpg', desc: 'Rymligt dubbelgarage med generösa mått. Aldrig mer kamp om garageplatsen.' },
-  { name: 'Enkelgarage', nr: '19505', src: 'https://www.mellbyhome.com/app/uploads/2023/11/19505-Bild1-1024x619.jpg', desc: 'Stilrent enkelgarage med snygg takvinkel. Matchar de flesta hustyper och tomtstorlekar.' },
-  { name: 'Carport med garage och förråd', nr: '19500', src: 'https://www.mellbyhome.com/app/uploads/2023/11/19500-Bild1-1024x619.jpg', desc: 'Smart kombination av carport, garage och förråd. Tre funktioner i en snygg byggnad.' },
-  { name: 'Carport med förråd', nr: '18791', src: 'https://www.mellbyhome.com/app/uploads/2023/02/18791-Bild1-1024x619.jpg', desc: 'Praktisk carport med integrerat förråd. Skyddar bilen och samlar allt du behöver på ett ställe.' },
-  { name: 'Carport', nr: '18735', src: 'https://www.mellbyhome.com/app/uploads/2023/02/18735-Bild1-1024x619.jpg', desc: 'Enkel och stilren carport. Skyddar bilen mot väder och vind utan att ta upp alltför mycket plats.' },
+  { name: 'Dubbelgarage', nr: '28334', src: 'https://www.mellbyhome.com/app/uploads/2025/09/28334-Bild1-AI-1024x640.png', desc: 'Modernt dubbelgarage med snygg fasad. Gott om plats för två bilar, cyklar och allt annat.' },
+  { name: 'Enkelgarage', nr: '19976', src: 'https://www.mellbyhome.com/app/uploads/2024/01/19976-Bild1-1024x619.jpg', desc: 'Klassiskt enkelgarage med modern känsla. Plats för bilen och lite extra förvaring.' },
+  { name: 'Dubbelgarage', nr: '19864', src: 'https://www.mellbyhome.com/app/uploads/2024/01/19864-Bild1-1024x619.jpg', desc: 'Rymligt dubbelgarage med generösa mått. Aldrig mer kamp om garageplatsen.' },
+  { name: 'Enkelgarage', nr: '19505', src: 'https://www.mellbyhome.com/app/uploads/2024/01/19505-Bild1-1024x619.jpg', desc: 'Stilrent enkelgarage med snygg takvinkel. Matchar de flesta hustyper.' },
+  { name: 'Carport med garage och förråd', nr: '19500', src: 'https://www.mellbyhome.com/app/uploads/2024/01/19500-Bild1-1024x619.jpg', desc: 'Smart kombination av carport, garage och förråd. Tre funktioner i en snygg byggnad.' },
+  { name: 'Carport med förråd', nr: '18791', src: 'https://www.mellbyhome.com/app/uploads/2023/02/18791-Bild1-1024x619.jpg', desc: 'Praktisk carport med integrerat förråd. Skyddar bilen och samlar allt på ett ställe.' },
+  { name: 'Carport', nr: '18735', src: 'https://www.mellbyhome.com/app/uploads/2023/02/18735-Bild1-1024x619.jpg', desc: 'Enkel och stilren carport. Skyddar bilen mot väder och vind.' },
   { name: 'Dubbelgarage', nr: '18688', src: 'https://www.mellbyhome.com/app/uploads/2023/02/18688-Bild1-1024x619.jpg', desc: 'Välplanerat dubbelgarage med god takhöjd. Plats för bilar, cyklar, verktyg och allt däremellan.' },
   { name: 'Carport', nr: '18593', src: 'https://www.mellbyhome.com/app/uploads/2023/02/18593-Bild1-1024x619.jpg', desc: 'Modern carport med stilren design. Enkelt och smidigt skydd för din bil.' },
   { name: 'Dubbelgarage', nr: '18589', src: 'https://www.mellbyhome.com/app/uploads/2023/02/18589-Bild1-1024x619.jpg', desc: 'Rymligt dubbelgarage med smart layout. Perfekt för familjer med flera bilar.' },
@@ -357,19 +362,19 @@ const GARAGE_BILDER = [
   { name: 'Enkelgarage', nr: '17959', src: 'https://www.mellbyhome.com/app/uploads/2023/01/17959-Bild1-1024x619.jpg', desc: 'Modernt enkelgarage med ren design. Enkelt att bygga, lätt att älska.' },
   { name: 'Enkelgarage', nr: '17860', src: 'https://www.mellbyhome.com/app/uploads/2023/01/17860-Bild1-1024x619.jpg', desc: 'Klassiskt enkelgarage med smart planlösning. Plats för bilen och lite extra.' },
   { name: 'Enkelgarage', nr: '17852', src: 'https://www.mellbyhome.com/app/uploads/2022/12/17852-Bild1-1024x724.jpg', desc: 'Välplanerat enkelgarage med god takhöjd. Lätt att uppföra med Mellby Homes byggsatssystem.' },
-  { name: 'Dubbelgarage', nr: '17836', src: 'https://www.mellbyhome.com/app/uploads/2022/12/17836-Bild1-1024x724.jpg', desc: 'Modernt dubbelgarage med stilren fasad. Hög takhöjd och gott om plats för bilar och förvaring.' },
+  { name: 'Dubbelgarage', nr: '17836', src: 'https://www.mellbyhome.com/app/uploads/2022/12/17836-Bild1-1024x724.jpg', desc: 'Modernt dubbelgarage med stilren fasad. Hög takhöjd och gott om plats.' },
   { name: 'Enkelgarage med carport', nr: '17430', src: 'https://www.mellbyhome.com/app/uploads/2022/11/1669392541-17430.0001-1024x724.jpg', desc: 'Smart kombination av enkelgarage med carport. Plats för två bilar – en under tak och en i stängt garage.' },
-  { name: 'Carport och garage', nr: '17424', src: 'https://www.mellbyhome.com/app/uploads/2022/11/Stad_Parhus_TvaPlan_Sadeltak.0002-scaled-1-1024x724.jpg', desc: 'Stilren kombination av carport och garage med sammanhängande tak. Ger fastigheten ett elegant helhetsintryck.' },
-  { name: 'Dubbelgarage', nr: '17431', src: 'https://www.mellbyhome.com/app/uploads/2023/06/Dubbelgarage-17431-Bild1-1024x724.jpg', desc: 'Rymligt dubbelgarage med generös takhöjd. Gott om plats för bilar, förvaringen och lite verkstad.' },
-  { name: 'Garage med loft', nr: '19055', src: 'https://www.mellbyhome.com/app/uploads/2023/11/19055-Bild1-1024x619.jpg', desc: 'Garage med loft – dubbelservice i en byggnad. Bilen stannar nere, hobbyutrymmet finns ovanför.' },
-  { name: 'Garage med loft', nr: '17690', src: 'https://www.mellbyhome.com/app/uploads/2023/01/17690-Bild1-1024x619.jpg', desc: 'Praktiskt garage med loft för förvaring eller hobby. Maximalt utnyttjad volym i en smart byggnad.' },
-  { name: 'Garage med bostadsklassad övervåning', nr: '16930', src: 'https://www.mellbyhome.com/app/uploads/2022/11/A-cam_final-scaled-1-1024x640.jpg', desc: 'Garage med bostadsklassad övervåning – en extra lägenhet ovanpå garaget. Perfekt för gäster, uthyrning eller hemmakontor.' },
-  { name: 'Garage med bostadsklassad övervåning', nr: '17580', src: 'https://www.mellbyhome.com/app/uploads/2023/01/17580-Bild1-1024x619.jpg', desc: 'Garage med bostad på övervåningen. Smart investering som kan ge hyresintäkter eller extra boyta för familjen.' },
+  { name: 'Carport och garage', nr: '17424', src: 'https://www.mellbyhome.com/app/uploads/2022/11/Stad_Parhus_TvaPlan_Sadeltak.0002-scaled-1-1024x724.jpg', desc: 'Stilren kombination av carport och garage med sammanhängande tak. Elegant helhetsintryck.' },
+  { name: 'Dubbelgarage', nr: '17431', src: 'https://www.mellbyhome.com/app/uploads/2023/06/Dubbelgarage-17431-Bild1-1024x724.jpg', desc: 'Rymligt dubbelgarage med generös takhöjd. Gott om plats för bilar och verkstad.' },
+  { name: 'Garage med loft', nr: '19055', src: 'https://www.mellbyhome.com/app/uploads/2024/01/19055-Bild1-1024x619.jpg', desc: 'Garage med loft – dubbelservice i en byggnad. Bilen stannar nere, hobbyutrymmet ovanför.' },
+  { name: 'Garage med loft', nr: '17690', src: 'https://www.mellbyhome.com/app/uploads/2023/01/17690-Bild1-1024x619.jpg', desc: 'Praktiskt garage med loft för förvaring eller hobby. Maximalt utnyttjad volym.' },
+  { name: 'Garage med bostadsklassad övervåning', nr: '16930', src: 'https://www.mellbyhome.com/app/uploads/2022/11/A-cam_final-scaled-1-1024x640.jpg', desc: 'Garage med bostadsklassad övervåning – extra lägenhet ovanpå garaget. Perfekt för gäster, uthyrning eller hemmakontor.' },
+  { name: 'Garage med bostadsklassad övervåning', nr: '17580', src: 'https://www.mellbyhome.com/app/uploads/2023/01/17580-Bild1-1024x619.jpg', desc: 'Garage med bostad på övervåningen. Smart investering – hyresintäkter eller extra boyta.' },
   { name: 'Garage med loft', nr: '16750', src: 'https://www.mellbyhome.com/app/uploads/2022/09/16750-Bild1-1024x617.png', desc: 'Stilfullt garage med loft och snygg fasad. Extra utrymme utan extra tomtyta.' },
   { name: 'Garage med loft', nr: '16742', src: 'https://www.mellbyhome.com/app/uploads/2022/09/16742-Bild1-1024x617.png', desc: 'Modernt garage med loft för förvaring. Ren design som passar alla fastigheter.' },
   { name: '2-plansgarage', nr: '16758', src: 'https://www.mellbyhome.com/app/uploads/2022/09/16758-Bild1-AI-1024x617.png', desc: 'Imponerande 2-plansgarage med boyta på övervåningen. Garage och bostad i en elegant byggnad.' },
-  { name: '2-plansgarage', nr: '16756', src: 'https://www.mellbyhome.com/app/uploads/2022/09/16756-Bild1-AI-1024x617.png', desc: 'Modernt 2-plansgarage med smart användning av hela volymen. Garage nere och extra yta ovanför.' },
-  { name: '2-plansgarage', nr: '16719', src: 'https://www.mellbyhome.com/app/uploads/2022/09/16719-Bild1-AI-1024x617.png', desc: 'Klassiskt 2-plansgarage med tidlös design. Garaget som ger fastigheten ett komplett och imponerande intryck.' }
+  { name: '2-plansgarage', nr: '16756', src: 'https://www.mellbyhome.com/app/uploads/2022/09/16756-Bild1-AI-1024x617.png', desc: 'Modernt 2-plansgarage med smart användning av hela volymen.' },
+  { name: '2-plansgarage', nr: '16719', src: 'https://www.mellbyhome.com/app/uploads/2022/09/16719-Bild1-AI-1024x617.png', desc: 'Klassiskt 2-plansgarage med tidlös design. Imponerande intryck på fastigheten.' }
 ];
 
 const BLOGG_ARTIKLAR = [
@@ -474,6 +479,7 @@ function resetPreview() {
   document.getElementById('btnGen').style.display = 'inline-block';
   document.getElementById('btnGen').disabled = false;
   document.getElementById('btnRegen').style.display = 'none';
+  document.getElementById('btnBoth').style.display = 'none';
   document.getElementById('btnFB').style.display = 'none';
   document.getElementById('btnIG').style.display = 'none';
   setStatus('', '');
@@ -628,12 +634,15 @@ async function generate() {
     document.getElementById('btnGen').style.display = 'none';
     document.getElementById('btnRegen').style.display = 'inline-block';
     document.getElementById('btnRegen').disabled = false;
+    document.getElementById('btnBoth').style.display = 'inline-block';
+    document.getElementById('btnBoth').disabled = false;
+    document.getElementById('btnBoth').textContent = 'Publicera på FB + Instagram';
     document.getElementById('btnFB').style.display = 'inline-block';
     document.getElementById('btnIG').style.display = 'inline-block';
     document.getElementById('btnFB').disabled = false;
     document.getElementById('btnIG').disabled = false;
-    document.getElementById('btnFB').textContent = 'Publicera på Facebook';
-    document.getElementById('btnIG').textContent = 'Publicera på Instagram';
+    document.getElementById('btnFB').textContent = 'Bara Facebook';
+    document.getElementById('btnIG').textContent = 'Bara Instagram';
 
     setStatus('Inlägget är klart! Granska och publicera.', 'ok');
 
@@ -645,6 +654,35 @@ async function generate() {
 }
 
 // ── Publicera ────────────────────────────────────────────────────────
+async function publishToFB(fbToken, fbPageId) {
+  const r = await fetch(`https://graph.facebook.com/v19.0/${fbPageId}/photos`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url: currentPost.bild, caption: currentPost.text, access_token: fbToken })
+  });
+  const result = await r.json();
+  if (result.error) throw new Error('Facebook: ' + result.error.message);
+  return result.post_id || result.id || 'OK';
+}
+
+async function publishToIG(fbToken, igId) {
+  const r1 = await fetch(`https://graph.facebook.com/v19.0/${igId}/media`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ image_url: currentPost.bild, caption: currentPost.text, access_token: fbToken })
+  });
+  const container = await r1.json();
+  if (container.error) throw new Error('Instagram: ' + container.error.message);
+  const r2 = await fetch(`https://graph.facebook.com/v19.0/${igId}/media_publish`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ creation_id: container.id, access_token: fbToken })
+  });
+  const result = await r2.json();
+  if (result.error) throw new Error('Instagram: ' + result.error.message);
+  return result.id || 'OK';
+}
+
 async function publish(platform) {
   if (!currentPost) return;
 
@@ -658,66 +696,62 @@ async function publish(platform) {
     return;
   }
 
-  const btnId = platform === 'fb' ? 'btnFB' : 'btnIG';
-  const btn = document.getElementById(btnId);
-  btn.disabled = true;
-  const pname = platform === 'fb' ? 'Facebook' : 'Instagram';
-  setStatus('Publicerar till ' + pname + '...', 'load');
+  // Disabla alla publish-knappar
+  ['btnBoth','btnFB','btnIG'].forEach(id => {
+    const b = document.getElementById(id);
+    if (b) b.disabled = true;
+  });
 
-  try {
-    let result;
-
-    if (platform === 'fb') {
-      // Facebook: publicera som foto-inlägg
-      const r = await fetch(`https://graph.facebook.com/v19.0/${fbPageId}/photos`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          url: currentPost.bild,
-          caption: currentPost.text,
-          access_token: fbToken
-        })
+  if (platform === 'both') {
+    setStatus('Publicerar till Facebook och Instagram...', 'load');
+    try {
+      const [fbId, igId2] = await Promise.all([
+        publishToFB(fbToken, fbPageId),
+        publishToIG(fbToken, igId)
+      ]);
+      setStatus('✓ Publicerat på både Facebook och Instagram!', 'ok');
+      document.getElementById('btnBoth').textContent = '✓ Publicerat på FB + IG';
+      addToLog('fb', currentPost.text, currentPost.bild, fbId);
+      addToLog('ig', currentPost.text, currentPost.bild, igId2);
+    } catch (err) {
+      setStatus('Fel: ' + err.message, 'err');
+      ['btnBoth','btnFB','btnIG'].forEach(id => {
+        const b = document.getElementById(id);
+        if (b) b.disabled = false;
       });
-      result = await r.json();
-      if (result.error) throw new Error(result.error.message);
-
-    } else {
-      // Instagram: steg 1 – skapa media container
-      const r1 = await fetch(`https://graph.facebook.com/v19.0/${igId}/media`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          image_url: currentPost.bild,
-          caption: currentPost.text,
-          access_token: fbToken
-        })
-      });
-      const container = await r1.json();
-      if (container.error) throw new Error(container.error.message);
-
-      // Instagram: steg 2 – publicera container
-      const r2 = await fetch(`https://graph.facebook.com/v19.0/${igId}/media_publish`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          creation_id: container.id,
-          access_token: fbToken
-        })
-      });
-      result = await r2.json();
-      if (result.error) throw new Error(result.error.message);
     }
 
-    const postId = result.post_id || result.id || 'OK';
-    setStatus('✓ Publicerat på ' + pname + '! Post ID: ' + postId, 'ok');
-    btn.textContent = '✓ Publicerat på ' + pname.substring(0,2);
+  } else if (platform === 'fb') {
+    setStatus('Publicerar till Facebook...', 'load');
+    try {
+      const postId = await publishToFB(fbToken, fbPageId);
+      setStatus('✓ Publicerat på Facebook! Post ID: ' + postId, 'ok');
+      document.getElementById('btnFB').textContent = '✓ Publicerat på FB';
+      document.getElementById('btnIG').disabled = false;
+      addToLog('fb', currentPost.text, currentPost.bild, postId);
+    } catch (err) {
+      setStatus('Fel: ' + err.message, 'err');
+      ['btnBoth','btnFB','btnIG'].forEach(id => {
+        const b = document.getElementById(id);
+        if (b) b.disabled = false;
+      });
+    }
 
-    // Lägg till i logg
-    addToLog(platform, currentPost.text, currentPost.bild, postId);
-
-  } catch (err) {
-    setStatus('Publiceringen misslyckades: ' + err.message, 'err');
-    btn.disabled = false;
+  } else {
+    setStatus('Publicerar till Instagram...', 'load');
+    try {
+      const postId = await publishToIG(fbToken, igId);
+      setStatus('✓ Publicerat på Instagram! Post ID: ' + postId, 'ok');
+      document.getElementById('btnIG').textContent = '✓ Publicerat på IG';
+      document.getElementById('btnFB').disabled = false;
+      addToLog('ig', currentPost.text, currentPost.bild, postId);
+    } catch (err) {
+      setStatus('Fel: ' + err.message, 'err');
+      ['btnBoth','btnFB','btnIG'].forEach(id => {
+        const b = document.getElementById(id);
+        if (b) b.disabled = false;
+      });
+    }
   }
 }
 
