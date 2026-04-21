@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mellby Home – Social Media Agent</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f5f5f3;
+    color: #1a1a1a;
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+
+  .container { max-width: 720px; margin: 0 auto; }
+
+  .header {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 2rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid #e5e5e3;
+  }
+  .logo {
+    width: 44px; height: 44px;
+    background: #1a1a1a; color: #fff;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600; letter-spacing: 0.5px;
+  }
+  .header-text h1 { font-size: 17px; font-weight: 600; }
+  .header-text p { font-size: 13px; color: #666; margin-top: 2px; }
+
+  /* Inställningar */
+  .settings-toggle {
+    font-size: 12px; color: #666; cursor: pointer;
+    text-decoration: underline; margin-bottom: 1rem;
+    display: inline-block;
+  }
+  .settings-panel {
+    background: #fff; border: 1px solid #e5e5e3;
+    border-radius: 12px; padding: 1.25rem;
+    margin-bottom: 1.5rem; display: none;
+  }
+  .settings-panel.open { display: block; }
+  .settings-panel h3 { font-size: 13px; font-weight: 600; margin-bottom: 12px; color: #444; }
+  .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 11px; color: #888; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+  .field input {
+    font-size: 13px; padding: 8px 10px;
+    border: 1px solid #e0e0de; border-radius: 8px;
+    background: #fafaf9; color: #1a1a1a;
+    outline: none;
+  }
+  .field input:focus { border-color: #999; background: #fff; }
+  .save-btn {
+    margin-top: 12px; padding: 8px 18px;
+    background: #1a1a1a; color: #fff;
+    border: none; border-radius: 8px;
+    font-size: 13px; font-weight: 500; cursor: pointer;
+  }
+  .save-btn:hover { background: #333; }
+
+  /* Teman */
+  .themes { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+  .tbtn {
+    padding: 7px 16px; border-radius: 20px;
+    border: 1px solid #d0d0ce;
+    background: #fff; color: #555;
+    font-size: 13px; cursor: pointer; transition: all 0.15s;
+  }
+  .tbtn:hover { border-color: #999; color: #1a1a1a; }
+  .tbtn.active {
+    background: #1a1a1a; color: #fff;
+    border-color: #1a1a1a;
+  }
+
+  /* Kundprojekt-box */
+  .kund-box {
+    background: #fff; border: 1px solid #e5e5e3;
+    border-radius: 12px; padding: 1.25rem;
+    margin-bottom: 1.5rem; display: none;
+  }
+  .kund-box.open { display: block; }
+  .kund-box label { font-size: 12px; color: #666; display: block; margin-bottom: 8px; }
+  .kund-box textarea {
+    width: 100%; min-height: 90px;
+    font-size: 12px; padding: 10px;
+    border: 1px solid #e0e0de; border-radius: 8px;
+    background: #fafaf9; color: #1a1a1a;
+    resize: vertical; outline: none; line-height: 1.6;
+  }
+  .kund-box textarea:focus { border-color: #999; }
+
+  /* Status */
+  .status {
+    font-size: 13px; padding: 10px 14px;
+    border-radius: 8px; margin-bottom: 1rem;
+    display: none; line-height: 1.5;
+  }
+  .status.ok { display: block; background: #e8f5e9; color: #2e7d32; }
+  .status.err { display: block; background: #fdecea; color: #c62828; }
+  .status.load { display: block; background: #f0f0ee; color: #555; }
+
+  /* Förhandsgranskning */
+  .preview-card {
+    background: #fff; border: 1px solid #e5e5e3;
+    border-radius: 16px; overflow: hidden;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .img-area {
+    width: 100%; height: 320px;
+    background: #f0f0ee;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; position: relative;
+  }
+  .img-area img { width: 100%; height: 100%; object-fit: cover; display: none; }
+  .img-placeholder {
+    font-size: 14px; color: #aaa; text-align: center; padding: 2rem;
+    line-height: 1.6;
+  }
+  .preview-body { padding: 1.25rem 1.5rem; }
+  .preview-text {
+    font-size: 15px; color: #1a1a1a; line-height: 1.7;
+    white-space: pre-wrap; min-height: 60px;
+  }
+  .preview-meta { font-size: 11px; color: #aaa; margin-top: 10px; }
+
+  /* Knappar */
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 2rem; }
+  .btn {
+    padding: 10px 20px; border-radius: 10px;
+    border: 1px solid #d0d0ce;
+    background: #fff; color: #1a1a1a;
+    font-size: 14px; font-weight: 500;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .btn:hover { background: #f5f5f3; border-color: #999; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-primary {
+    background: #1a1a1a; color: #fff;
+    border-color: #1a1a1a;
+  }
+  .btn-primary:hover { background: #333; border-color: #333; }
+  .btn-fb { color: #1877F2; border-color: #b3d1f9; }
+  .btn-fb:hover { background: #e8f1fd; }
+  .btn-ig { color: #C13584; border-color: #f0bbd9; }
+  .btn-ig:hover { background: #fce8f2; }
+
+  /* Logg */
+  .divider { border: none; border-top: 1px solid #e5e5e3; margin: 2rem 0; }
+  .log-section h2 { font-size: 14px; font-weight: 600; color: #444; margin-bottom: 1rem; }
+  .log-empty { font-size: 13px; color: #aaa; }
+  .log-item {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 12px; padding: 10px 0;
+    border-bottom: 1px solid #f0f0ee; font-size: 13px;
+  }
+  .log-item:last-child { border-bottom: none; }
+  .log-text { color: #444; flex: 1; line-height: 1.5; }
+  .log-badge {
+    font-size: 11px; font-weight: 600;
+    padding: 3px 8px; border-radius: 6px;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .log-badge.fb { background: #e8f1fd; color: #1877F2; }
+  .log-badge.ig { background: #fce8f2; color: #C13584; }
+  .log-date { font-size: 11px; color: #bbb; margin-top: 2px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="logo">MH</div>
+    <div class="header-text">
+      <h1>Mellby Home – Social Media Agent</h1>
+      <p>Generera, granska och publicera inlägg till Facebook och Instagram</p>
+    </div>
+  </div>
+
+  <span class="settings-toggle" onclick="toggleSettings()">⚙ Inställningar (API-nycklar)</span>
+
+  <div class="settings-panel" id="settingsPanel">
+    <h3>API-inställningar</h3>
+    <div class="settings-grid">
+      <div class="field">
+        <label>Anthropic API-nyckel</label>
+        <input type="password" id="akey" placeholder="sk-ant-api03-..." />
+      </div>
+      <div class="field">
+        <label>Facebook Access Token</label>
+        <input type="password" id="fbtoken" placeholder="EAANlFZ..." />
+      </div>
+      <div class="field">
+        <label>Facebook Page ID</label>
+        <input type="text" id="fbpage" value="679997542387864" />
+      </div>
+      <div class="field">
+        <label>Instagram Account ID</label>
+        <input type="text" id="igid" value="17841408616922410" />
+      </div>
+    </div>
+    <button class="save-btn" onclick="saveSettings()">Spara inställningar</button>
+  </div>
+
+  <div class="themes">
+    <button class="tbtn active" data-t="hus" onclick="setTheme(this)">Husmodeller</button>
+    <button class="tbtn" data-t="garage" onclick="setTheme(this)">Garage &amp; carport</button>
+    <button class="tbtn" data-t="kund" onclick="setTheme(this)">Kundprojekt</button>
+    <button class="tbtn" data-t="blogg" onclick="setTheme(this)">Bloggtips</button>
+    <button class="tbtn" data-t="slump" onclick="setTheme(this)">Slumpa</button>
+  </div>
+
+  <div class="kund-box" id="kundBox">
+    <label>Klistra in URL:er till kundbilder (en per rad). Filnamnet ska innehålla ordet "bild" och gärna ett projektnummer:</label>
+    <textarea id="kundurls" placeholder="https://www.mellbyhome.com/app/uploads/kundprojekt/projekt-12345-bild.jpg&#10;https://www.mellbyhome.com/app/uploads/kundprojekt/projekt-67890-bild.jpg"></textarea>
+  </div>
+
+  <div class="status" id="statusBar"></div>
+
+  <div class="preview-card">
+    <div class="img-area" id="imgArea">
+      <div class="img-placeholder" id="imgPh">Välj ett tema och klicka<br>"Generera inlägg" för förhandsgranskning</div>
+      <img id="previewImg" alt="Inläggsbild" />
+    </div>
+    <div class="preview-body">
+      <div class="preview-text" id="previewText">—</div>
+      <div class="preview-meta" id="previewMeta"></div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-primary" id="btnGen" onclick="generate()">Generera inlägg</button>
+    <button class="btn" id="btnRegen" onclick="generate()" style="display:none">Generera nytt</button>
+    <button class="btn btn-fb" id="btnFB" onclick="publish('fb')" style="display:none" disabled>Publicera på Facebook</button>
+    <button class="btn btn-ig" id="btnIG" onclick="publish('ig')" style="display:none" disabled>Publicera på Instagram</button>
+  </div>
+
+  <hr class="divider" />
+
+  <div class="log-section">
+    <h2>Publiceringslogg</h2>
+    <div id="logList"><p class="log-empty">Inga publicerade inlägg ännu.</p></div>
+  </div>
+
+</div>
+
+<script>
+// ── Bildbibliotek ──────────────────────────────────────────────────
+const HUS_BILDER = [
+  'https://www.mellbyhome.com/app/uploads/2025/02/27629-Bild1-1024x619.jpg',
+  'https://www.mellbyhome.com/app/uploads/2023/01/18085-Bild-1024x512.jpg',
+  'https://www.mellbyhome.com/app/uploads/2023/11/21249-bild1-1024x619.jpg',
+  'https://www.mellbyhome.com/app/uploads/2025/04/27797-Bild1-1024x619.jpg',
+  'https://www.mellbyhome.com/app/uploads/2023/11/22171-Bild1-1024x619.jpg'
+];
+
+const GARAGE_BILDER = [
+  'https://www.mellbyhome.com/app/uploads/2022/11/1669392541-17430.0001-1024x724.jpg',
+  'https://www.mellbyhome.com/app/uploads/2022/11/Stad_Parhus_TvaPlan_Sadeltak.0002-scaled-1-1024x724.jpg',
+  'https://www.mellbyhome.com/app/uploads/2022/11/A-cam_final-scaled-1-1024x640.jpg',
+  'https://www.mellbyhome.com/app/uploads/2023/11/22171-Bild1-1024x619.jpg'
+];
+
+const BLOGG_ARTIKLAR = [
+  { t: 'Stort ladhus i modern stil', u: 'https://www.mellbyhome.com/sv/blogg/husinspiration/stort-ladhus-i-modern-stil/' },
+  { t: 'Ett rymligt modernt tvåplanshus', u: 'https://www.mellbyhome.com/sv/blogg/levererade-hus/ett-rymligt-tvaplanshus/' },
+  { t: 'Enplanshus för barnfamiljen', u: 'https://www.mellbyhome.com/sv/blogg/levererade-hus/enplanshus-141-kvm/' },
+  { t: 'Matchande hus och garage på Tjörn', u: 'https://www.mellbyhome.com/sv/blogg/levererade-hus/matchande-hus-och-garage-pa-tjorn/' },
+  { t: 'Parhus i fjällen med plats för 4–6 bäddar', u: 'https://www.mellbyhome.com/sv/blogg/levererade-hus/parhus-i-fjallen/' },
+  { t: '1,5-planshus med öppen planlösning', u: 'https://www.mellbyhome.com/sv/blogg/levererade-hus/15-planshus-med-oppen-planlosning/' },
+  { t: '2-planshus med valmat tak', u: 'https://www.mellbyhome.com/sv/blogg/information/2-planshus-med-valmat-tak-2/' }
+];
+
+// ── Tillstånd ───────────────────────────────────────────────────────
+let currentTheme = 'hus';
+let currentPost  = null;
+let pubLogs      = [];
+
+// ── Hjälpfunktioner ─────────────────────────────────────────────────
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+function setStatus(msg, type) {
+  const b = document.getElementById('statusBar');
+  b.textContent = msg;
+  b.className = 'status' + (type ? ' ' + type : '');
+}
+
+function toggleSettings() {
+  document.getElementById('settingsPanel').classList.toggle('open');
+}
+
+function saveSettings() {
+  localStorage.setItem('mh_akey',    document.getElementById('akey').value);
+  localStorage.setItem('mh_fbtoken', document.getElementById('fbtoken').value);
+  localStorage.setItem('mh_fbpage',  document.getElementById('fbpage').value);
+  localStorage.setItem('mh_igid',    document.getElementById('igid').value);
+  setStatus('Inställningar sparade!', 'ok');
+  setTimeout(() => setStatus('', ''), 2500);
+}
+
+function loadSettings() {
+  const k = ['akey','fbtoken','fbpage','igid'];
+  const s = ['mh_akey','mh_fbtoken','mh_fbpage','mh_igid'];
+  k.forEach((id, i) => {
+    const v = localStorage.getItem(s[i]);
+    if (v) document.getElementById(id).value = v;
+  });
+}
+
+function setTheme(btn) {
+  document.querySelectorAll('.tbtn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentTheme = btn.dataset.t;
+  document.getElementById('kundBox').classList.toggle('open', currentTheme === 'kund');
+  resetPreview();
+}
+
+function resetPreview() {
+  currentPost = null;
+  document.getElementById('previewText').textContent = '—';
+  document.getElementById('previewMeta').textContent = '';
+  const img = document.getElementById('previewImg');
+  img.style.display = 'none'; img.src = '';
+  document.getElementById('imgPh').style.display = 'flex';
+  document.getElementById('btnGen').style.display = 'inline-block';
+  document.getElementById('btnGen').disabled = false;
+  document.getElementById('btnRegen').style.display = 'none';
+  document.getElementById('btnFB').style.display = 'none';
+  document.getElementById('btnIG').style.display = 'none';
+  setStatus('', '');
+}
+
+// ── Prompt-byggare ───────────────────────────────────────────────────
+function buildPrompt() {
+  const t = currentTheme === 'slump'
+    ? ['hus','garage','kund','blogg'][Math.floor(Math.random() * 4)]
+    : currentTheme;
+
+  let instruktion = '';
+
+  if (t === 'hus') {
+    instruktion = `Skriv ett inspirerande inlägg om ett av Mellby Homes monteringsfärdiga hus (enplanshus, tvåplanshus, fritidshus, parhus, radhus eller attefallshus). Fokus på frihet att designa, svenska material, kvalitet och att detta inte är ett tråkigt kataloghus.
+
+Välj EN av dessa husbilder och använd EXAKT den URL:en:
+${HUS_BILDER.join('\n')}`;
+
+  } else if (t === 'garage') {
+    instruktion = `Skriv ett inspirerande inlägg om ett av Mellby Homes garage eller carport. Fokus på funktion, design och kvalitet. Visa att ett garage kan vara mer än bara förvaring.
+
+Välj EN av dessa garagebilder och använd EXAKT den URL:en:
+${GARAGE_BILDER.join('\n')}`;
+
+  } else if (t === 'kund') {
+    const urls = (document.getElementById('kundurls').value || '')
+      .trim().split('\n')
+      .map(u => u.trim())
+      .filter(u => u.length > 0 && u.toLowerCase().includes('bild'));
+    const pool = urls.length > 0 ? urls : HUS_BILDER;
+    const vald = pick(pool);
+    const m = vald.match(/projekt[-_]?(\d+)/i) || vald.match(/(\d{5,6})/i);
+    const pnr = m ? m[1] : '';
+    instruktion = `Skriv ett varmt och personligt inlägg om ett kundprojekt hos Mellby Home.${pnr ? ` Projektnummer: ${pnr} – nämn det i texten så att kunder kan referera till det.` : ''} Texten ska vara äkta, inspirerande och visa stolthet över resultatet.
+
+Använd denna bild (EXAKT denna URL):
+${vald}`;
+
+  } else {
+    const art = pick(BLOGG_ARTIKLAR);
+    const bild = pick(HUS_BILDER);
+    instruktion = `Skriv ett inlägg som tipsar om blogginlägget "${art.t}" på Mellby Homes blogg. Inkludera länken: ${art.u}. Texten ska locka folk att klicka och läsa mer – ge en hint om vad de får veta.
+
+Välj EN bild (EXAKT denna URL):
+${bild}`;
+  }
+
+  return `Du är social media-copywriter för Mellby Home (mellbyhome.com), hustillverkare sedan 1957 i Stora Mellby utanför Vårgårda. VD: Fredrik Sahlberg.
+Slogan: Inga tråkiga kataloghus. Marknadens bästa garanti.
+
+${instruktion}
+
+REGLER FÖR TEXTEN:
+- Max 220 tecken för själva texten (exklusive hashtags och länk)
+- Avsluta med exakt 5 relevanta hashtags på en ny rad
+- Avsluta ALLTID med: Marknadens bästa garanti.
+- Ton: Varm, personlig och engagerande – aldrig katalogtext
+- KRITISKT: Välj bild ENBART från listan ovan, använd EXAKT den URL:en
+
+Svara ENBART med giltig JSON – inga förklaringar, inga kodblock, ingen annan text:
+{"text":"INLÄGGSTEXT MED HASHTAGS OCH AVSLUTNING","bild":"EXAKT-URL-FRÅN-LISTAN"}`;
+}
+
+// ── Generera inlägg ──────────────────────────────────────────────────
+async function generate() {
+  const akey = document.getElementById('akey').value.trim();
+  if (!akey) {
+    setStatus('Ange din Anthropic API-nyckel under ⚙ Inställningar.', 'err');
+    document.getElementById('settingsPanel').classList.add('open');
+    return;
+  }
+
+  document.getElementById('btnGen').disabled = true;
+  document.getElementById('btnRegen').disabled = true;
+  setStatus('Genererar inlägg med Claude AI...', 'load');
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': akey,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 800,
+        system: 'Du svarar ALLTID och ENBART med giltig JSON. Aldrig något annat. Aldrig förklaringar. Aldrig kodblock. Bara ren JSON.',
+        messages: [{ role: 'user', content: buildPrompt() }]
+      })
+    });
+
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error.message);
+
+    let raw = data.content[0].text.trim();
+    let parsed;
+    try {
+      parsed = JSON.parse(raw);
+    } catch (e) {
+      const m = raw.match(/\{[\s\S]*\}/);
+      if (m) parsed = JSON.parse(m[0]);
+      else throw new Error('Kunde inte tolka JSON-svaret från Claude.');
+    }
+
+    currentPost = parsed;
+
+    // Visa text
+    document.getElementById('previewText').textContent = parsed.text;
+
+    // Visa bild
+    if (parsed.bild) {
+      const img = document.getElementById('previewImg');
+      img.onload = () => {
+        img.style.display = 'block';
+        document.getElementById('imgPh').style.display = 'none';
+      };
+      img.onerror = () => {
+        document.getElementById('imgPh').textContent = 'Kunde inte ladda bilden. Kontrollera URL:en.';
+      };
+      img.src = parsed.bild;
+    }
+
+    // Tema-etikett
+    const temaLabel = { hus:'Husmodell', garage:'Garage/carport', kund:'Kundprojekt', blogg:'Bloggtips', slump:'Slumpmässigt' };
+    document.getElementById('previewMeta').textContent =
+      'Tema: ' + (temaLabel[currentTheme] || currentTheme) +
+      ' · Genererat ' + new Date().toLocaleTimeString('sv-SE') +
+      ' · Bild: ' + (parsed.bild ? parsed.bild.split('/').pop() : '—');
+
+    // Visa knappar
+    document.getElementById('btnGen').style.display = 'none';
+    document.getElementById('btnRegen').style.display = 'inline-block';
+    document.getElementById('btnRegen').disabled = false;
+    document.getElementById('btnFB').style.display = 'inline-block';
+    document.getElementById('btnIG').style.display = 'inline-block';
+    document.getElementById('btnFB').disabled = false;
+    document.getElementById('btnIG').disabled = false;
+    document.getElementById('btnFB').textContent = 'Publicera på Facebook';
+    document.getElementById('btnIG').textContent = 'Publicera på Instagram';
+
+    setStatus('Inlägget är klart! Granska och publicera.', 'ok');
+
+  } catch (err) {
+    setStatus('Fel: ' + err.message, 'err');
+    document.getElementById('btnGen').disabled = false;
+    document.getElementById('btnRegen').disabled = false;
+  }
+}
+
+// ── Publicera ────────────────────────────────────────────────────────
+async function publish(platform) {
+  if (!currentPost) return;
+
+  const fbToken = document.getElementById('fbtoken').value.trim();
+  const fbPageId = document.getElementById('fbpage').value.trim();
+  const igId = document.getElementById('igid').value.trim();
+
+  if (!fbToken) {
+    setStatus('Ange Facebook Access Token under ⚙ Inställningar.', 'err');
+    document.getElementById('settingsPanel').classList.add('open');
+    return;
+  }
+
+  const btnId = platform === 'fb' ? 'btnFB' : 'btnIG';
+  const btn = document.getElementById(btnId);
+  btn.disabled = true;
+  const pname = platform === 'fb' ? 'Facebook' : 'Instagram';
+  setStatus('Publicerar till ' + pname + '...', 'load');
+
+  try {
+    let result;
+
+    if (platform === 'fb') {
+      // Facebook: publicera som foto-inlägg
+      const r = await fetch(`https://graph.facebook.com/v19.0/${fbPageId}/photos`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url: currentPost.bild,
+          caption: currentPost.text,
+          access_token: fbToken
+        })
+      });
+      result = await r.json();
+      if (result.error) throw new Error(result.error.message);
+
+    } else {
+      // Instagram: steg 1 – skapa media container
+      const r1 = await fetch(`https://graph.facebook.com/v19.0/${igId}/media`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          image_url: currentPost.bild,
+          caption: currentPost.text,
+          access_token: fbToken
+        })
+      });
+      const container = await r1.json();
+      if (container.error) throw new Error(container.error.message);
+
+      // Instagram: steg 2 – publicera container
+      const r2 = await fetch(`https://graph.facebook.com/v19.0/${igId}/media_publish`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          creation_id: container.id,
+          access_token: fbToken
+        })
+      });
+      result = await r2.json();
+      if (result.error) throw new Error(result.error.message);
+    }
+
+    const postId = result.post_id || result.id || 'OK';
+    setStatus('✓ Publicerat på ' + pname + '! Post ID: ' + postId, 'ok');
+    btn.textContent = '✓ Publicerat på ' + pname.substring(0,2);
+
+    // Lägg till i logg
+    addToLog(platform, currentPost.text, currentPost.bild, postId);
+
+  } catch (err) {
+    setStatus('Publiceringen misslyckades: ' + err.message, 'err');
+    btn.disabled = false;
+  }
+}
+
+// ── Logg ─────────────────────────────────────────────────────────────
+function addToLog(platform, text, bild, postId) {
+  pubLogs.unshift({ platform, text, bild, postId, date: new Date() });
+
+  // Spara logg i localStorage
+  try {
+    localStorage.setItem('mh_publog', JSON.stringify(pubLogs.slice(0, 50)));
+  } catch(e) {}
+
+  renderLog();
+}
+
+function renderLog() {
+  const el = document.getElementById('logList');
+  if (pubLogs.length === 0) {
+    el.innerHTML = '<p class="log-empty">Inga publicerade inlägg ännu.</p>';
+    return;
+  }
+  el.innerHTML = pubLogs.slice(0, 20).map(l => `
+    <div class="log-item">
+      <div class="log-text">
+        ${l.text.substring(0, 80)}...
+        <div class="log-date">${l.date.toLocaleDateString('sv-SE')} ${l.date.toLocaleTimeString('sv-SE', {hour:'2-digit',minute:'2-digit'})} · Post ID: ${l.postId}</div>
+      </div>
+      <span class="log-badge ${l.platform}">${l.platform === 'fb' ? 'Facebook' : 'Instagram'}</span>
+    </div>
+  `).join('');
+}
+
+function loadLog() {
+  try {
+    const saved = localStorage.getItem('mh_publog');
+    if (saved) {
+      pubLogs = JSON.parse(saved).map(l => ({ ...l, date: new Date(l.date) }));
+      renderLog();
+    }
+  } catch(e) {}
+}
+
+// ── Initiering ───────────────────────────────────────────────────────
+loadSettings();
+loadLog();
+</script>
+</body>
+</html>
