@@ -217,8 +217,11 @@
   </div>
 
   <div class="kund-box" id="kundBox">
-    <label>Klistra in URL:er till kundbilder (en per rad). Filnamnet ska innehålla ordet "bild" och gärna ett projektnummer:</label>
-    <textarea id="kundurls" placeholder="https://www.mellbyhome.com/app/uploads/kundprojekt/projekt-12345-bild.jpg&#10;https://www.mellbyhome.com/app/uploads/kundprojekt/projekt-67890-bild.jpg"></textarea>
+    <label>📸 26 kundprojekt från OneDrive är inbyggda. En slumpmässig bild väljs automatiskt.</label>
+    <div style="margin-top:10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <button class="btn" onclick="window.open('https://mellbygarage-my.sharepoint.com/:f:/g/personal/info_mellbyhome_com/IgB2bBhHXni1RqMTWyWxdXNjAUSkYQRS2be16U7-k13sFC4?e=ahrZ9d','sharepoint','width=900,height=700')" style="font-size:13px;padding:7px 14px;">🔑 Logga in på SharePoint</button>
+      <span style="font-size:12px;color:#888;">Logga in en gång – sedan laddas kundbilderna automatiskt i alla inlägg.</span>
+    </div>
   </div>
 
   <div class="status" id="statusBar"></div>
@@ -251,30 +254,170 @@
 </div>
 
 <script>
+// ── Kundprojekt – 26 projekt från OneDrive ─────────────────────────
+// Bilder hämtas via SharePoint (kräver inloggning på mellbygarage-my.sharepoint.com)
+const KUND_PROJEKT = [
+  { typ: '1,5 planshus', nr: '21611', bilder: ['https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2F1%2C5%20planshus%2021611%2F20240729_124432.jpg'] },
+  { typ: '1,5 planshus', nr: '22777', bilder: ['https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2F1%2C5%20planshus%2022777%2Ffasad-mot-sydvast-3.jpeg', 'https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2F1%2C5%20planshus%2022777%2Ffasad-sydvast-low.jpg', 'https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2F1%2C5%20planshus%2022777%2Fvardagsrum-1-low.jpg'] },
+  { typ: 'Carport', nr: '17571', bilder: ['https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FCarport%2017571%2F20250904_202552.jpg'] },
+  { typ: 'Carport', nr: '22590', bilder: ['https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FCarport%2022590%2Fimg_9493.jpeg'] },
+  { typ: 'Carport', nr: '23899', bilder: ['https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FCaraport%2023899%2F1000013759.jpg', 'https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FCaraport%2023899%2F1000013758.jpg'] },
+  { typ: 'Enplanshus', nr: '19071', bilder: ['https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FEnplanshus%2019071%2Fimg_8868.jpeg', 'https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FEnplanshus%2019071%2Fimg_8867.jpeg'] },
+  { typ: 'Enplanshus', nr: '22419', bilder: ['https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FEnplanshus%2022419%2Fimg_3653.jpeg'] },
+  { typ: 'Enplanshus', nr: '22721', bilder: ['https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FEnplanshus%2022721%2Ffullsizerender.jpeg'] },
+  { typ: 'Garage', nr: '14361', bilder: ['https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FGarage%2014361%2Fimg_8350.jpeg', 'https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FGarage%2014361%2Fimg_8337.jpeg', 'https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FGarage%2014361%2Fimg_8352.jpeg', 'https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FGarage%2014361%2Fimg_8329.jpeg'] },
+  { typ: 'Garage', nr: '18435', bilder: ['https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FGarage%2018435%2F20251001_174730.jpg', 'https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FGarage%2018435%2F20251001_174542.jpg'] },
+  { typ: 'Garage', nr: '18625', bilder: ['https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FGarage%2018625%2Fimg_6754.jpeg', 'https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FGarage%2018625%2Fimg_3546.jpeg'] },
+  { typ: 'Garage', nr: '19306', bilder: ['https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FGarage%2019306%2F20250930_145322.jpg', 'https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FGarage%2019306%2F20250930_145338.jpg', 'https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FGarage%2019306%2F20250930_145527.jpg'] },
+  { typ: 'Garage', nr: '19438', bilder: ['https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FGarage%2019438%2Fimg_0248.jpeg'] },
+  { typ: 'Garage', nr: '21543', bilder: ['https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FGarage%2021543%2Fimg_5545.jpeg', 'https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FGarage%2021543%2Fimg_6231.jpeg', 'https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FGarage%2021543%2Fimg_5783.jpeg'] },
+  { typ: 'Garage', nr: '21823', bilder: ['https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FGarage%2021823%2Fimg_20250906_131805.jpg'] },
+  { typ: 'Garage', nr: '23552', bilder: ['https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FGarage%2023552%2Fimg20250928101616.jpg', 'https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FGarage%2023552%2Fimg20250928101722.jpg', 'https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FGarage%2023552%2Fimg20250928102706.jpg'] },
+  { typ: 'Garage', nr: '23637', bilder: ['https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FGarage%2023637%2Fimg_3608.jpg', 'https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FGarage%2023637%2Fimg_3606.jpg', 'https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FGarage%2023637%2Fimg_3605.jpg'] },
+  { typ: 'Garage', nr: '23879', bilder: ['https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FGarage%2023879%2Fimg_2361.jpeg', 'https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FGarage%2023879%2Fimg_2367.jpeg'] },
+  { typ: 'Garage', nr: '24166', bilder: ['https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FGarage%2024166%2F1000005421.jpg'] },
+  { typ: 'Garage', nr: '24200', bilder: ['https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FGarage%2024200%2Fdji_fly_20240915_190740_48_1726421399788_photo_optimized.jpg', 'https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FGarage%2024200%2Fdji_fly_20250719_192426_52_1752945874047_photo_optimized.jpg', 'https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FGarage%2024200%2F20250909_1915144.jpg'] },
+  { typ: 'Garage', nr: '24333', bilder: ['https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FGarage%2024333%2Fgarage_syltvik2025.jpg'] },
+  { typ: 'Garage', nr: '24552', bilder: ['https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FGarage%2024552%2F20250906_170133.jpg', 'https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FGarage%2024552%2F20250906_171341.jpg'] },
+  { typ: 'Garage', nr: '24584', bilder: ['https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FGarage%2024584%2Fimg_6227.jpeg', 'https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FGarage%2024584%2Fimg_6226.jpeg', 'https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FGarage%2024584%2Fimg_6244.jpeg', 'https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FGarage%2024584%2Fimg_6224.jpeg'] },
+  { typ: 'Garage med övervåning', nr: '23049', bilder: ['https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FGarage%20med%20%C3%B6verv%C3%A5ning%2023049%2Fgarage1.jpg', 'https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FGarage%20med%20%C3%B6verv%C3%A5ning%2023049%2Fgarage2.jpg'] },
+  { typ: 'Hus', nr: '24193', bilder: ['https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FHus%2024193%2Fhus_ake_kehrmann.jpeg'] },
+  { typ: 'Hus', nr: '24313', bilder: ['https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FHus%2024313%2Fhus.jpg', 'https://mellbygarage-my.sharepoint.com/personal/info_mellbyhome_com/_layouts/15/download.aspx?SourceUrl=%2Fpersonal%2Finfo_mellbyhome_com%2FDocuments%2FGlobal%2F3.%20Marketing%2FKundbilder%202025%20-%20st%C3%A4dad%20f%C3%B6r%20AI-agent%2FHus%2024313%2Fhuset.jpg'] },
+];
+
 // ── Bildbibliotek ──────────────────────────────────────────────────
+// Bildbibliotek – 40 husmodeller + 38 garagemodeller
+// Hämtat från mellbyhome.com/sv/alla-modeller/ – inkl. namn, projektnummer och beskrivning
 const HUS_BILDER = [
-  'https://www.mellbyhome.com/app/uploads/2025/02/27629-Bild1-1024x619.jpg',
-  'https://www.mellbyhome.com/app/uploads/2023/01/18085-Bild-1024x512.jpg',
-  'https://www.mellbyhome.com/app/uploads/2023/11/21249-bild1-1024x619.jpg',
-  'https://www.mellbyhome.com/app/uploads/2025/04/27797-Bild1-1024x619.jpg',
-  'https://www.mellbyhome.com/app/uploads/2023/11/22171-Bild1-1024x619.jpg'
+  { name: 'Enplanshus', nr: '31332', src: 'https://www.mellbyhome.com/app/uploads/2026/03/31332-bild1-1024x546.png', desc: 'Enplanshus med vidbyggt dubbelgarage. Snyggt och praktiskt med rymligt dubbelgarage, stor tvättstuga och förråd. Allt innanför husets väggar!' },
+  { name: 'Enplanshus', nr: '31384', src: 'https://www.mellbyhome.com/app/uploads/2026/03/31384-Bild2-1024x555.png', desc: 'Enplanshus i modern stil med smart planlösning och 4 sovrum. Snyggt, praktiskt och modernt familjehus.' },
+  { name: 'Enplanshus', nr: '30740', src: 'https://www.mellbyhome.com/app/uploads/2026/01/30740-bild1-1024x617.png', desc: 'Modernt enplanshus med vacker symmetri. Naturligt trä-färgad panel med hattläkt, bandat plåttak och antracitgrå dubbeldörr. Vackert och välplanerat!' },
+  { name: 'Enplanshus', nr: '30737', src: 'https://www.mellbyhome.com/app/uploads/2026/01/30737-Bild1-AI-1024x617.png', desc: 'Enplanshus i klassisk stil med modern komfort. Välplanerat med smarta lösningar för hela familjen.' },
+  { name: 'Attefallshus', nr: '30076', src: 'https://www.mellbyhome.com/app/uploads/2025/11/30076-bild-1024x640.png', desc: 'Kompakt attefallshus med smart planlösning. Perfekt som gäststuga, uthyrningsobjekt eller litet permanentboende.' },
+  { name: 'Attefallshus', nr: '30060', src: 'https://www.mellbyhome.com/app/uploads/2025/11/30060-Bild-AI2-1-1024x747.png', desc: 'Modernt attefallshus med öppen planlösning och stora fönster. Ljust och välkomnande hem på liten yta.' },
+  { name: 'Attefallshus', nr: '30040', src: 'https://www.mellbyhome.com/app/uploads/2025/11/30040-bild-AI-2-1024x796.png', desc: 'Stilrent attefallshus med hög standard. Maximalt utnyttjad yta med smarta förvaringslösningar.' },
+  { name: 'Attefallshus', nr: '30039', src: 'https://www.mellbyhome.com/app/uploads/2025/10/30039-Bild-AI-1024x904.png', desc: 'Litet hus med stor känsla. Perfekt som komplement på tomten eller för den som vill bo enkelt och smart.' },
+  { name: 'Attefallshus', nr: '30038', src: 'https://www.mellbyhome.com/app/uploads/2025/10/30038-Bild-AI-1024x796.png', desc: 'Välplanerat attefallshus med öppen yta och plats för det viktigaste. Enkelt, snyggt och funktionellt.' },
+  { name: 'Attefallshus', nr: '29945', src: 'https://www.mellbyhome.com/app/uploads/2025/10/29945-Bild-AI-1024x683.png', desc: 'Modernt och kompakt attefallshus med smart layout. Bra val för den som vill ha mer utrymme på tomten.' },
+  { name: 'Enplanshus U-form', nr: '27629', src: 'https://www.mellbyhome.com/app/uploads/2025/02/27629-Bild1-1024x619.jpg', desc: 'Enplanshus i U-form med inbyggd inglasad uteplats. Fantastiskt för familjer som vill ha skyddad utomhusmiljö direkt från vardagsrummet.' },
+  { name: 'Enplanshus/Fritidshus', nr: '23445', src: 'https://www.mellbyhome.com/app/uploads/2024/05/23445-Bild1-1024x640.jpg', desc: 'Flexibelt hus som passar både som permanentboende och fritidshus. Tidlös design med praktisk planlösning.' },
+  { name: 'Enplanshus/Fritidshus', nr: '16952', src: 'https://www.mellbyhome.com/app/uploads/2024/05/16952-Bild1-1024x619.jpg', desc: 'Klassiskt enplanshus med karaktär. Passar lika bra som sommarboende som helårsbostad.' },
+  { name: 'Enplanshus U-form', nr: '23201', src: 'https://www.mellbyhome.com/app/uploads/2024/05/23201-Bild1-1024x619.jpg', desc: 'Enplanshus i U-form med skyddad innergård. Perfekt för familjer som vill ha en privat utomhusmiljö.' },
+  { name: 'Enplanshus', nr: '22039', src: 'https://www.mellbyhome.com/app/uploads/2024/01/22039-Bild1-1024x619.jpg', desc: 'Modernt enplanshus med öppen planlösning och stora fönster mot trädgården. Ljust och luftigt hem.' },
+  { name: 'Enplanshus', nr: '21985', src: 'https://www.mellbyhome.com/app/uploads/2023/11/21985-Bild1-1024x619.jpg', desc: 'Välplanerat enplanshus med plats för hela familjen. Praktisk layout med gott om förvaringsutrymme.' },
+  { name: 'Enplanshus/Fritidshus', nr: '21047', src: 'https://www.mellbyhome.com/app/uploads/2023/11/21047-Bild1-1024x619.jpg', desc: 'Charmigt hus med tidlös design. Perfekt som fritidshus nära naturen eller permanentboende på landet.' },
+  { name: 'Enplanshus', nr: '20842', src: 'https://www.mellbyhome.com/app/uploads/2023/11/20842-Bild1-1024x619.jpg', desc: 'Funktionellt enplanshus med smart planlösning. Bra val för den moderna familjen som vill ha allt på ett plan.' },
+  { name: 'Radhus Enplan', nr: '16966', src: 'https://www.mellbyhome.com/app/uploads/2023/11/16966-Bild1-1024x619.jpg', desc: 'Snyggt enplans radhus med privat uteplats. Perfekt för bostadsrättsföreningar och byggherrar.' },
+  { name: 'Parhus Enplan', nr: '16967', src: 'https://www.mellbyhome.com/app/uploads/2023/11/16967-Bild1-1024x619.jpg', desc: 'Modernt parhus i enplansutförande. Smart investering – bo i ena halvan och hyr ut den andra.' },
+  { name: 'Enplanshus/Fritidshus', nr: '19049', src: 'https://www.mellbyhome.com/app/uploads/2023/11/19049-Bild1-1024x619.jpg', desc: 'Klassiskt fritidshus med modern standard. Njut av naturen utan att kompromissa med komforten.' },
+  { name: 'Enplanshus med garage', nr: '19038', src: 'https://www.mellbyhome.com/app/uploads/2023/11/19038-Bild1-1024x619.jpg', desc: 'Enplanshus med integrerat garage. Smidig lösning där hus och garage bildar en sammanhängande helhet.' },
+  { name: 'Enplanshus/Fritidshus', nr: '18946', src: 'https://www.mellbyhome.com/app/uploads/2023/11/18946-Bild1-1024x619.jpg', desc: 'Genomtänkt fritidshus med välplanerad layout. Ger mer av det du älskar – natur, ro och frihet.' },
+  { name: 'Enplanshus', nr: '18356', src: 'https://www.mellbyhome.com/app/uploads/2023/02/18356-Bild1-1024x619.jpg', desc: 'Stilfullt enplanshus med hög takhöjd och öppen planlösning. Ljust och rymligt hem för familjen.' },
+  { name: 'Enplanshus', nr: '18732', src: 'https://www.mellbyhome.com/app/uploads/2023/02/18732-Bild1-1024x619.jpg', desc: 'Modernt enplanshus med välbalanserad planlösning. Stor vardagsrumsdel med öppen koppling till köket.' },
+  { name: 'Enplanshus', nr: '17704', src: 'https://www.mellbyhome.com/app/uploads/2023/01/17704-Bild1-1024x619.jpg', desc: 'Klassiskt enplanshus med tidlös charm. Välgenomtänkt layout med plats för hela familjen.' },
+  { name: 'Enplanshus', nr: '18085', src: 'https://www.mellbyhome.com/app/uploads/2023/01/18085-Bild-1024x512.jpg', desc: 'Modernt enplanshus med sadeltak och genomtänkt planlösning. Bra storlek för den moderna familjen.' },
+  { name: 'Enplanshus', nr: '17615', src: 'https://www.mellbyhome.com/app/uploads/2022/11/17615-Bild-1-AI-1024x617.png', desc: 'Enplanshus med modern fasad och smart interiör. Energieffektivt och välplanerat för bekvämt boende.' },
+  { name: 'Enplanshus', nr: '16955', src: 'https://www.mellbyhome.com/app/uploads/2022/11/16955-Bild1-1024x617.png', desc: 'Välplanerat enplanshus med attraktiv exteriör. Perfekt storlek för par och mindre familjer.' },
+  { name: 'Enplanshus', nr: '16684', src: 'https://www.mellbyhome.com/app/uploads/2022/09/16684-Bild1-AI-1024x617.png', desc: 'Praktiskt enplanshus med genomtänkt planlösning och goda förvaringslösningar.' },
+  { name: '1,5-planshus', nr: '27797', src: 'https://www.mellbyhome.com/app/uploads/2025/04/27797-Bild1-1024x619.jpg', desc: 'Stilfullt 1,5-planshus med kupa och stora fönster. Familjehus med gott om utrymme och en planlösning som skapar trivsel.' },
+  { name: '1,5-planshus', nr: '21249', src: 'https://www.mellbyhome.com/app/uploads/2023/11/21249-bild1-1024x619.jpg', desc: '1,5-planshus med takkupa och gott om utrymme för familjen. Fem sovrum, god förvaring – vackert och praktiskt hem med klassisk charm.' },
+  { name: '1,5-planshus', nr: '19428', src: 'https://www.mellbyhome.com/app/uploads/2023/11/19428-Bild1-1024x619.jpg', desc: 'Klassiskt 1,5-planshus med charmig takkupa. Maximalt utnyttjat utrymme på en smart yta.' },
+  { name: 'Parhus 1,5-plan', nr: '18377', src: 'https://www.mellbyhome.com/app/uploads/2023/02/18377-Bild1-1024x619.jpg', desc: 'Modernt parhus i 1,5-plansutförande. Karaktärsfull exteriör med genomtänkt planlösning i båda halvorna.' },
+  { name: '2-planshus', nr: '28238', src: 'https://www.mellbyhome.com/app/uploads/2024/09/28238-Bild1-1024x619.jpg', desc: '2-planshus med vidbyggt garage. Stora fönsterpartier på baksidan skapar fantastisk utsikt mot tomten. Boyta 183 kvm, garaget 49 kvm.' },
+  { name: 'Parhus 2-plan', nr: '16964', src: 'https://www.mellbyhome.com/app/uploads/2024/05/16964-bild-AI-1024x640.png', desc: 'Modernt parhus i tvåplansutförande. Snygg exteriör och välfungerande planlösning – smart investering.' },
+  { name: 'Tvåplanshus', nr: '22171', src: 'https://www.mellbyhome.com/app/uploads/2023/11/22171-Bild1-1024x619.jpg', desc: 'Modernt tvåplanshus med stilren fasad. Rymligt och välplanerat med plats för hela familjen på två plan.' },
+  { name: 'Radhus', nr: '16963', src: 'https://www.mellbyhome.com/app/uploads/2023/03/16963-Bild-1-1024x512.jpg', desc: 'Modernt radhus med smart planlösning. Perfekt för byggherrar och bostadsrättsföreningar.' },
+  { name: 'Tvåplanshus', nr: '18334', src: 'https://www.mellbyhome.com/app/uploads/2023/02/18334-Bild-1024x619.jpg', desc: 'Klassiskt tvåplanshus med modern komfort. Välplanerat hem med sovrum på övervåningen och sociala ytor på nedervåningen.' },
+  { name: 'Herrgård', nr: '18449', src: 'https://www.mellbyhome.com/app/uploads/2023/02/18449-Bild2-1024x619.jpg', desc: 'Imponerande herrgårdsmodell med klassisk arkitektur och modernt innanmäte. Stor boendeyta med gott om utrymme.' }
 ];
 
 const GARAGE_BILDER = [
-  'https://www.mellbyhome.com/app/uploads/2022/11/1669392541-17430.0001-1024x724.jpg',
-  'https://www.mellbyhome.com/app/uploads/2022/11/Stad_Parhus_TvaPlan_Sadeltak.0002-scaled-1-1024x724.jpg',
-  'https://www.mellbyhome.com/app/uploads/2022/11/A-cam_final-scaled-1-1024x640.jpg',
-  'https://www.mellbyhome.com/app/uploads/2023/11/22171-Bild1-1024x619.jpg'
+  { name: 'Attefallsgarage', nr: '30555', src: 'https://www.mellbyhome.com/app/uploads/2025/12/30555-Bild1-AI-1024x683.png', desc: 'Modernt attefallsgarage med snygg fasad. Maximalt tillåten yta utan bygglov. Perfekt komplement till tomten.' },
+  { name: 'Attefallsgarage', nr: '30577', src: 'https://www.mellbyhome.com/app/uploads/2025/12/30577-bild1-AI-1024x796.png', desc: 'Stilrent attefallsgarage med modern design. Rymligt och praktiskt utan krav på bygglov.' },
+  { name: 'Attefallsgarage', nr: '30556', src: 'https://www.mellbyhome.com/app/uploads/2025/12/30556-Bild1-AI-1024x640.png', desc: 'Kompakt attefallsgarage med smart layout. Plats för bilen och förvaringen – allt inom lagens gränser.' },
+  { name: 'Attefallsgarage', nr: '30576', src: 'https://www.mellbyhome.com/app/uploads/2025/12/30576-Bild1-AI-1024x617.png', desc: 'Klassiskt attefallsgarage med tidlös design. Enkelt att bygga, svårt att sluta beundra.' },
+  { name: 'Attefallsgarage', nr: '30253', src: 'https://www.mellbyhome.com/app/uploads/2025/10/30253-Bild1-AI-1024x617.png', desc: 'Modernt attefallsgarage med ren linjeföring. Passar alla husstiler och tomtstorlekar.' },
+  { name: 'Attefallsgarage', nr: '30251', src: 'https://www.mellbyhome.com/app/uploads/2025/10/30251-Bild1-AI-1024x617.png', desc: 'Välplanerat attefallsgarage med smart utnyttjad yta. Snabb och enkel uppförning utan bygglov.' },
+  { name: 'Carport och Garage', nr: '30028', src: 'https://www.mellbyhome.com/app/uploads/2025/09/30028-Bild1-AI-1024x640.png', desc: 'Kombinerad carport och garage – det bästa av två världar. Överdäckning för en bil och stängt garage för en annan.' },
+  { name: 'Dubbelgarage', nr: '28334', src: 'https://www.mellbyhome.com/app/uploads/2025/09/28334-Bild1-AI-1024x640.png', desc: 'Modernt dubbelgarage med snygg fasad. Gott om plats för två bilar, cyklar och allt annat som behöver tak.' },
+  { name: 'Enkelgarage', nr: '19976', src: 'https://www.mellbyhome.com/app/uploads/2023/11/19976-Bild1-1024x619.jpg', desc: 'Klassiskt enkelgarage med modern känsla. Plats för bilen och lite extra förvaring.' },
+  { name: 'Dubbelgarage', nr: '19864', src: 'https://www.mellbyhome.com/app/uploads/2023/11/19864-Bild1-1024x619.jpg', desc: 'Rymligt dubbelgarage med generösa mått. Aldrig mer kamp om garageplatsen.' },
+  { name: 'Enkelgarage', nr: '19505', src: 'https://www.mellbyhome.com/app/uploads/2023/11/19505-Bild1-1024x619.jpg', desc: 'Stilrent enkelgarage med snygg takvinkel. Matchar de flesta hustyper och tomtstorlekar.' },
+  { name: 'Carport med garage och förråd', nr: '19500', src: 'https://www.mellbyhome.com/app/uploads/2023/11/19500-Bild1-1024x619.jpg', desc: 'Smart kombination av carport, garage och förråd. Tre funktioner i en snygg byggnad.' },
+  { name: 'Carport med förråd', nr: '18791', src: 'https://www.mellbyhome.com/app/uploads/2023/02/18791-Bild1-1024x619.jpg', desc: 'Praktisk carport med integrerat förråd. Skyddar bilen och samlar allt du behöver på ett ställe.' },
+  { name: 'Carport', nr: '18735', src: 'https://www.mellbyhome.com/app/uploads/2023/02/18735-Bild1-1024x619.jpg', desc: 'Enkel och stilren carport. Skyddar bilen mot väder och vind utan att ta upp alltför mycket plats.' },
+  { name: 'Dubbelgarage', nr: '18688', src: 'https://www.mellbyhome.com/app/uploads/2023/02/18688-Bild1-1024x619.jpg', desc: 'Välplanerat dubbelgarage med god takhöjd. Plats för bilar, cyklar, verktyg och allt däremellan.' },
+  { name: 'Carport', nr: '18593', src: 'https://www.mellbyhome.com/app/uploads/2023/02/18593-Bild1-1024x619.jpg', desc: 'Modern carport med stilren design. Enkelt och smidigt skydd för din bil.' },
+  { name: 'Dubbelgarage', nr: '18589', src: 'https://www.mellbyhome.com/app/uploads/2023/02/18589-Bild1-1024x619.jpg', desc: 'Rymligt dubbelgarage med smart layout. Perfekt för familjer med flera bilar.' },
+  { name: 'Dubbelgarage', nr: '18584', src: 'https://www.mellbyhome.com/app/uploads/2023/02/18584-Bild1-1024x619.jpg', desc: 'Modernt dubbelgarage med fin fasad. Ger fastigheten ett komplett och välvårdat intryck.' },
+  { name: 'Dubbelgarage', nr: '18558', src: 'https://www.mellbyhome.com/app/uploads/2023/02/18558-Bild1-1024x619.jpg', desc: 'Klassiskt dubbelgarage med tidlös design. Passar alla tomter och husstiler.' },
+  { name: 'Enkelgarage', nr: '18532', src: 'https://www.mellbyhome.com/app/uploads/2023/02/18532-Bild1-1024x619.jpg', desc: 'Kompakt enkelgarage med snygg profil. Plats för bilen utan att dominera tomten.' },
+  { name: 'Enkelgarage', nr: '18514', src: 'https://www.mellbyhome.com/app/uploads/2023/02/18514-Bild1-1024x619.jpg', desc: 'Praktiskt enkelgarage med genomtänkt layout. Enkel byggnation med proffsigt resultat.' },
+  { name: 'Dubbelgarage', nr: '18495', src: 'https://www.mellbyhome.com/app/uploads/2023/02/18495-Bild1-1024x619.jpg', desc: 'Stilrent dubbelgarage med vacker takvinkel. Lika snyggt som funktionellt.' },
+  { name: 'Enkelgarage', nr: '17959', src: 'https://www.mellbyhome.com/app/uploads/2023/01/17959-Bild1-1024x619.jpg', desc: 'Modernt enkelgarage med ren design. Enkelt att bygga, lätt att älska.' },
+  { name: 'Enkelgarage', nr: '17860', src: 'https://www.mellbyhome.com/app/uploads/2023/01/17860-Bild1-1024x619.jpg', desc: 'Klassiskt enkelgarage med smart planlösning. Plats för bilen och lite extra.' },
+  { name: 'Enkelgarage', nr: '17852', src: 'https://www.mellbyhome.com/app/uploads/2022/12/17852-Bild1-1024x724.jpg', desc: 'Välplanerat enkelgarage med god takhöjd. Lätt att uppföra med Mellby Homes byggsatssystem.' },
+  { name: 'Dubbelgarage', nr: '17836', src: 'https://www.mellbyhome.com/app/uploads/2022/12/17836-Bild1-1024x724.jpg', desc: 'Modernt dubbelgarage med stilren fasad. Hög takhöjd och gott om plats för bilar och förvaring.' },
+  { name: 'Enkelgarage med carport', nr: '17430', src: 'https://www.mellbyhome.com/app/uploads/2022/11/1669392541-17430.0001-1024x724.jpg', desc: 'Smart kombination av enkelgarage med carport. Plats för två bilar – en under tak och en i stängt garage.' },
+  { name: 'Carport och garage', nr: '17424', src: 'https://www.mellbyhome.com/app/uploads/2022/11/Stad_Parhus_TvaPlan_Sadeltak.0002-scaled-1-1024x724.jpg', desc: 'Stilren kombination av carport och garage med sammanhängande tak. Ger fastigheten ett elegant helhetsintryck.' },
+  { name: 'Dubbelgarage', nr: '17431', src: 'https://www.mellbyhome.com/app/uploads/2023/06/Dubbelgarage-17431-Bild1-1024x724.jpg', desc: 'Rymligt dubbelgarage med generös takhöjd. Gott om plats för bilar, förvaringen och lite verkstad.' },
+  { name: 'Garage med loft', nr: '19055', src: 'https://www.mellbyhome.com/app/uploads/2023/11/19055-Bild1-1024x619.jpg', desc: 'Garage med loft – dubbelservice i en byggnad. Bilen stannar nere, hobbyutrymmet finns ovanför.' },
+  { name: 'Garage med loft', nr: '17690', src: 'https://www.mellbyhome.com/app/uploads/2023/01/17690-Bild1-1024x619.jpg', desc: 'Praktiskt garage med loft för förvaring eller hobby. Maximalt utnyttjad volym i en smart byggnad.' },
+  { name: 'Garage med bostadsklassad övervåning', nr: '16930', src: 'https://www.mellbyhome.com/app/uploads/2022/11/A-cam_final-scaled-1-1024x640.jpg', desc: 'Garage med bostadsklassad övervåning – en extra lägenhet ovanpå garaget. Perfekt för gäster, uthyrning eller hemmakontor.' },
+  { name: 'Garage med bostadsklassad övervåning', nr: '17580', src: 'https://www.mellbyhome.com/app/uploads/2023/01/17580-Bild1-1024x619.jpg', desc: 'Garage med bostad på övervåningen. Smart investering som kan ge hyresintäkter eller extra boyta för familjen.' },
+  { name: 'Garage med loft', nr: '16750', src: 'https://www.mellbyhome.com/app/uploads/2022/09/16750-Bild1-1024x617.png', desc: 'Stilfullt garage med loft och snygg fasad. Extra utrymme utan extra tomtyta.' },
+  { name: 'Garage med loft', nr: '16742', src: 'https://www.mellbyhome.com/app/uploads/2022/09/16742-Bild1-1024x617.png', desc: 'Modernt garage med loft för förvaring. Ren design som passar alla fastigheter.' },
+  { name: '2-plansgarage', nr: '16758', src: 'https://www.mellbyhome.com/app/uploads/2022/09/16758-Bild1-AI-1024x617.png', desc: 'Imponerande 2-plansgarage med boyta på övervåningen. Garage och bostad i en elegant byggnad.' },
+  { name: '2-plansgarage', nr: '16756', src: 'https://www.mellbyhome.com/app/uploads/2022/09/16756-Bild1-AI-1024x617.png', desc: 'Modernt 2-plansgarage med smart användning av hela volymen. Garage nere och extra yta ovanför.' },
+  { name: '2-plansgarage', nr: '16719', src: 'https://www.mellbyhome.com/app/uploads/2022/09/16719-Bild1-AI-1024x617.png', desc: 'Klassiskt 2-plansgarage med tidlös design. Garaget som ger fastigheten ett komplett och imponerande intryck.' }
 ];
 
 const BLOGG_ARTIKLAR = [
-  { t: 'Stort ladhus i modern stil', u: 'https://www.mellbyhome.com/sv/blogg/husinspiration/stort-ladhus-i-modern-stil/' },
-  { t: 'Ett rymligt modernt tvåplanshus', u: 'https://www.mellbyhome.com/sv/blogg/levererade-hus/ett-rymligt-tvaplanshus/' },
-  { t: 'Enplanshus för barnfamiljen', u: 'https://www.mellbyhome.com/sv/blogg/levererade-hus/enplanshus-141-kvm/' },
-  { t: 'Matchande hus och garage på Tjörn', u: 'https://www.mellbyhome.com/sv/blogg/levererade-hus/matchande-hus-och-garage-pa-tjorn/' },
-  { t: 'Parhus i fjällen med plats för 4–6 bäddar', u: 'https://www.mellbyhome.com/sv/blogg/levererade-hus/parhus-i-fjallen/' },
-  { t: '1,5-planshus med öppen planlösning', u: 'https://www.mellbyhome.com/sv/blogg/levererade-hus/15-planshus-med-oppen-planlosning/' },
-  { t: '2-planshus med valmat tak', u: 'https://www.mellbyhome.com/sv/blogg/information/2-planshus-med-valmat-tak-2/' }
+  {
+    t: 'Stort ladhus i modern stil',
+    u: 'https://www.mellbyhome.com/sv/blogg/husinspiration/stort-ladhus-i-modern-stil/',
+    b: 'https://www.mellbyhome.com/app/uploads/2026/01/30740-bild1-1024x617.jpg'
+  },
+  {
+    t: 'Ett rymligt modernt tvåplanshus',
+    u: 'https://www.mellbyhome.com/sv/blogg/levererade-hus/ett-rymligt-tvaplanshus/',
+    b: 'https://www.mellbyhome.com/app/uploads/2026/03/31384-Bild2-1024x555.jpg'
+  },
+  {
+    t: 'Enplanshus för barnfamiljen',
+    u: 'https://www.mellbyhome.com/sv/blogg/levererade-hus/enplanshus-141-kvm/',
+    b: 'https://www.mellbyhome.com/app/uploads/2025/02/27629-Bild1-1024x619.jpg'
+  },
+  {
+    t: 'Matchande hus och garage på Tjörn',
+    u: 'https://www.mellbyhome.com/sv/blogg/levererade-hus/matchande-hus-och-garage-pa-tjorn/',
+    b: 'https://www.mellbyhome.com/app/uploads/2023/11/21249-bild1-1024x619.jpg'
+  },
+  {
+    t: 'Parhus i fjällen med plats för 4–6 bäddar',
+    u: 'https://www.mellbyhome.com/sv/blogg/levererade-hus/parhus-i-fjallen/',
+    b: 'https://www.mellbyhome.com/app/uploads/2025/04/27797-Bild1-1024x619.jpg'
+  },
+  {
+    t: '1,5-planshus med öppen planlösning',
+    u: 'https://www.mellbyhome.com/sv/blogg/levererade-hus/15-planshus-med-oppen-planlosning/',
+    b: 'https://www.mellbyhome.com/app/uploads/2023/01/18085-Bild-1024x512.jpg'
+  },
+  {
+    t: '2-planshus med valmat tak',
+    u: 'https://www.mellbyhome.com/sv/blogg/information/2-planshus-med-valmat-tak-2/',
+    b: 'https://www.mellbyhome.com/app/uploads/2026/01/30737-Bild1-AI-1024x617.jpg'
+  },
+  {
+    t: 'Garageinspo – hitta din stil',
+    u: 'https://www.mellbyhome.com/sv/blogg/garage-sv/',
+    b: 'https://www.mellbyhome.com/app/uploads/2022/11/A-cam_final-scaled-1-1024x640.jpg'
+  },
+  {
+    t: 'Parhus i fjällen – plats för 7–10 bäddar',
+    u: 'https://www.mellbyhome.com/sv/inspiration/levererade-hus/husbyggnation-i-branas/',
+    b: 'https://www.mellbyhome.com/app/uploads/2022/11/Stad_Parhus_TvaPlan_Sadeltak.0002-scaled-1-1024x724.jpg'
+  }
 ];
 
 // ── Tillstånd ───────────────────────────────────────────────────────
@@ -345,38 +488,52 @@ function buildPrompt() {
   let instruktion = '';
 
   if (t === 'hus') {
-    instruktion = `Skriv ett inspirerande inlägg om ett av Mellby Homes monteringsfärdiga hus (enplanshus, tvåplanshus, fritidshus, parhus, radhus eller attefallshus). Fokus på frihet att designa, svenska material, kvalitet och att detta inte är ett tråkigt kataloghus.
+    const vald = pick(HUS_BILDER);
+    instruktion = `Skriv ett inspirerande inlägg om Mellby Homes modell "${vald.name} ${vald.nr}".
 
-Välj EN av dessa husbilder och använd EXAKT den URL:en:
-${HUS_BILDER.join('\n')}`;
+Modellbeskrivning (använd som inspiration för USP:ar i texten):
+"${vald.desc}"
+
+Nämn modellnamnet "${vald.name}" i texten. Skriv utifrån beskrivningens unika egenskaper – det är det som skiljer just denna modell från andra. Fokus på frihet att designa och att detta inte är ett tråkigt kataloghus.
+
+Använd EXAKT denna bild-URL:
+${vald.src}`;
 
   } else if (t === 'garage') {
-    instruktion = `Skriv ett inspirerande inlägg om ett av Mellby Homes garage eller carport. Fokus på funktion, design och kvalitet. Visa att ett garage kan vara mer än bara förvaring.
+    const vald = pick(GARAGE_BILDER);
+    instruktion = `Skriv ett inspirerande inlägg om Mellby Homes modell "${vald.name} ${vald.nr}".
 
-Välj EN av dessa garagebilder och använd EXAKT den URL:en:
-${GARAGE_BILDER.join('\n')}`;
+Modellbeskrivning (använd som inspiration för USP:ar i texten):
+"${vald.desc}"
+
+Nämn modellnamnet "${vald.name}" i texten. Skriv utifrån beskrivningens unika egenskaper – det är det som skiljer just denna modell från andra. Visa att ett garage kan vara mer än bara förvaring.
+
+Använd EXAKT denna bild-URL:
+${vald.src}`;
 
   } else if (t === 'kund') {
-    const urls = (document.getElementById('kundurls').value || '')
-      .trim().split('\n')
-      .map(u => u.trim())
-      .filter(u => u.length > 0 && u.toLowerCase().includes('bild'));
-    const pool = urls.length > 0 ? urls : HUS_BILDER;
-    const vald = pick(pool);
-    const m = vald.match(/projekt[-_]?(\d+)/i) || vald.match(/(\d{5,6})/i);
-    const pnr = m ? m[1] : '';
-    instruktion = `Skriv ett varmt och personligt inlägg om ett kundprojekt hos Mellby Home.${pnr ? ` Projektnummer: ${pnr} – nämn det i texten så att kunder kan referera till det.` : ''} Texten ska vara äkta, inspirerande och visa stolthet över resultatet.
+    const projekt = pick(KUND_PROJEKT);
+    const bild = pick(projekt.bilder);
+    instruktion = `Skriv ett varmt och personligt inlägg om ett kundprojekt hos Mellby Home.
+
+Typ av byggnad: ${projekt.typ}
+Projektnummer: ${projekt.nr} – nämn detta i texten så att kunder kan referera till det.
+
+Texten MÅSTE:
+- Tacka kunden för deras fina foton som de skickat in
+- Nämna "${projekt.typ} ${projekt.nr}" i texten
+- Vara äkta, varm och inspirerande
+- Visa stolthet över det färdiga resultatet
 
 Använd denna bild (EXAKT denna URL):
-${vald}`;
+${bild}`;
 
   } else {
     const art = pick(BLOGG_ARTIKLAR);
-    const bild = pick(HUS_BILDER);
-    instruktion = `Skriv ett inlägg som tipsar om blogginlägget "${art.t}" på Mellby Homes blogg. Inkludera länken: ${art.u}. Texten ska locka folk att klicka och läsa mer – ge en hint om vad de får veta.
+    instruktion = `Skriv ett inlägg som tipsar om blogginlägget "${art.t}" på Mellby Homes blogg. Inkludera länken: ${art.u}. Texten ska locka folk att klicka och läsa mer – ge en hint om vad de får veta utan att avslöja allt.
 
-Välj EN bild (EXAKT denna URL):
-${bild}`;
+Använd denna bild från blogginlägget (EXAKT denna URL):
+${art.b}`;
   }
 
   return `Du är social media-copywriter för Mellby Home (mellbyhome.com), hustillverkare sedan 1957 i Stora Mellby utanför Vårgårda. VD: Fredrik Sahlberg.
@@ -458,10 +615,14 @@ async function generate() {
 
     // Tema-etikett
     const temaLabel = { hus:'Husmodell', garage:'Garage/carport', kund:'Kundprojekt', blogg:'Bloggtips', slump:'Slumpmässigt' };
+    const modelInfo = (currentTheme === 'hus' || currentTheme === 'garage' || currentTheme === 'slump') && currentPost._modelDesc
+      ? ' · ' + currentPost._modelDesc
+      : '';
     document.getElementById('previewMeta').textContent =
       'Tema: ' + (temaLabel[currentTheme] || currentTheme) +
       ' · Genererat ' + new Date().toLocaleTimeString('sv-SE') +
-      ' · Bild: ' + (parsed.bild ? parsed.bild.split('/').pop() : '—');
+      ' · Bild: ' + (parsed.bild ? parsed.bild.split('/').pop() : '—') +
+      modelInfo;
 
     // Visa knappar
     document.getElementById('btnGen').style.display = 'none';
