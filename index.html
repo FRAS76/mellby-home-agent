@@ -428,6 +428,7 @@ const BLOGG_ARTIKLAR = [
 // ── Tillstånd ───────────────────────────────────────────────────────
 let currentTheme = 'hus';
 let currentPost  = null;
+let chosenBild   = null;  // bilden vi valt i JS – används oavsett vad Claude returnerar
 let pubLogs      = [];
 
 // ── Hjälpfunktioner ─────────────────────────────────────────────────
@@ -471,6 +472,7 @@ function setTheme(btn) {
 
 function resetPreview() {
   currentPost = null;
+  chosenBild = null;
   document.getElementById('previewText').textContent = '—';
   document.getElementById('previewMeta').textContent = '';
   const img = document.getElementById('previewImg');
@@ -495,31 +497,28 @@ function buildPrompt() {
 
   if (t === 'hus') {
     const vald = pick(HUS_BILDER);
+    chosenBild = vald.src;
     instruktion = `Skriv ett inspirerande inlägg om Mellby Homes modell "${vald.name} ${vald.nr}".
 
 Modellbeskrivning (använd som inspiration för USP:ar i texten):
 "${vald.desc}"
 
-Nämn modellnamnet "${vald.name}" i texten. Skriv utifrån beskrivningens unika egenskaper – det är det som skiljer just denna modell från andra. Fokus på frihet att designa och att detta inte är ett tråkigt kataloghus.
-
-Använd EXAKT denna bild-URL:
-${vald.src}`;
+Nämn modellnamnet "${vald.name}" i texten. Skriv utifrån beskrivningens unika egenskaper – det är det som skiljer just denna modell från andra. Fokus på frihet att designa och att detta inte är ett tråkigt kataloghus.`;
 
   } else if (t === 'garage') {
     const vald = pick(GARAGE_BILDER);
+    chosenBild = vald.src;
     instruktion = `Skriv ett inspirerande inlägg om Mellby Homes modell "${vald.name} ${vald.nr}".
 
 Modellbeskrivning (använd som inspiration för USP:ar i texten):
 "${vald.desc}"
 
-Nämn modellnamnet "${vald.name}" i texten. Skriv utifrån beskrivningens unika egenskaper – det är det som skiljer just denna modell från andra. Visa att ett garage kan vara mer än bara förvaring.
-
-Använd EXAKT denna bild-URL:
-${vald.src}`;
+Nämn modellnamnet "${vald.name}" i texten. Skriv utifrån beskrivningens unika egenskaper – det är det som skiljer just denna modell från andra. Visa att ett garage kan vara mer än bara förvaring.`;
 
   } else if (t === 'kund') {
     const projekt = pick(KUND_PROJEKT);
     const bild = pick(projekt.bilder);
+    chosenBild = bild;
     instruktion = `Skriv ett varmt och personligt inlägg om ett kundprojekt hos Mellby Home.
 
 Typ av byggnad: ${projekt.typ}
@@ -536,6 +535,7 @@ ${bild}`;
 
   } else {
     const art = pick(BLOGG_ARTIKLAR);
+    chosenBild = art.b;
     instruktion = `Skriv ett inlägg som tipsar om blogginlägget "${art.t}" på Mellby Homes blogg. Inkludera länken: ${art.u}. Texten ska locka folk att klicka och läsa mer – ge en hint om vad de får veta utan att avslöja allt.
 
 Använd denna bild från blogginlägget (EXAKT denna URL):
@@ -601,6 +601,8 @@ async function generate() {
       else throw new Error('Kunde inte tolka JSON-svaret från Claude.');
     }
 
+    // Säkerställ att bilden är den vi valt i JS, inte vad Claude hittat på
+    if (chosenBild) parsed.bild = chosenBild;
     currentPost = parsed;
 
     // Visa text
