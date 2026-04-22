@@ -657,25 +657,44 @@ async function generate() {
 
 // ── Publicera ────────────────────────────────────────────────────────
 async function publishToFB(fbToken, fbPageId) {
-  const r = await fetch(`https://graph.facebook.com/v19.0/${fbPageId}/photos`, {
+  // Försök publicera som foto-inlägg med /photos
+  const r = await fetch(`https://graph.facebook.com/v22.0/${fbPageId}/photos`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ url: currentPost.bild, caption: currentPost.text, access_token: fbToken })
+    body: JSON.stringify({
+      url: currentPost.bild,
+      caption: currentPost.text,
+      access_token: fbToken
+    })
   });
   const result = await r.json();
-  if (result.error) throw new Error('Facebook: ' + result.error.message);
+  if (result.error) {
+    // Fallback: publicera som feed-inlägg med bildlänk
+    const r2 = await fetch(`https://graph.facebook.com/v22.0/${fbPageId}/feed`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: currentPost.text,
+        link: currentPost.bild,
+        access_token: fbToken
+      })
+    });
+    const result2 = await r2.json();
+    if (result2.error) throw new Error('Facebook: ' + result2.error.message);
+    return result2.id || 'OK';
+  }
   return result.post_id || result.id || 'OK';
 }
 
 async function publishToIG(fbToken, igId) {
-  const r1 = await fetch(`https://graph.facebook.com/v19.0/${igId}/media`, {
+  const r1 = await fetch(`https://graph.facebook.com/v22.0/${igId}/media`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ image_url: currentPost.bild, caption: currentPost.text, access_token: fbToken })
   });
   const container = await r1.json();
   if (container.error) throw new Error('Instagram: ' + container.error.message);
-  const r2 = await fetch(`https://graph.facebook.com/v19.0/${igId}/media_publish`, {
+  const r2 = await fetch(`https://graph.facebook.com/v22.0/${igId}/media_publish`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ creation_id: container.id, access_token: fbToken })
