@@ -495,8 +495,14 @@ function buildPrompt() {
 
   let instruktion = '';
 
+  // Hjälpfunktion: föredra JPEG-bilder (Instagram accepterar inte PNG)
+  function pickJpeg(arr) {
+    const jpgBilder = arr.filter(m => !m.src.toLowerCase().endsWith('.png'));
+    return pick(jpgBilder.length > 0 ? jpgBilder : arr);
+  }
+
   if (t === 'hus') {
-    const vald = pick(HUS_BILDER);
+    const vald = pickJpeg(HUS_BILDER);
     chosenBild = vald.src;
     instruktion = `Skriv ett inspirerande inlägg om Mellby Homes modell "${vald.name} ${vald.nr}".
 
@@ -506,7 +512,7 @@ Modellbeskrivning (använd som inspiration för USP:ar i texten):
 Nämn modellnamnet "${vald.name}" i texten. Skriv utifrån beskrivningens unika egenskaper – det är det som skiljer just denna modell från andra. Fokus på frihet att designa och att detta inte är ett tråkigt kataloghus.`;
 
   } else if (t === 'garage') {
-    const vald = pick(GARAGE_BILDER);
+    const vald = pickJpeg(GARAGE_BILDER);
     chosenBild = vald.src;
     instruktion = `Skriv ett inspirerande inlägg om Mellby Homes modell "${vald.name} ${vald.nr}".
 
@@ -687,13 +693,39 @@ async function publishToFB(fbToken, fbPageId) {
 }
 
 async function publishToIG(fbToken, igId) {
+  // Instagram kräver JPEG – konvertera PNG-URL till JPG-variant om möjligt
+  let bildUrl = currentPost.bild;
+  if (bildUrl && bildUrl.toLowerCase().endsWith('.png')) {
+    // Försök med JPG-version av samma bild
+    bildUrl = bildUrl.replace(/\.png$/i, '.jpg');
+  }
   const r1 = await fetch(`https://graph.facebook.com/v22.0/${igId}/media`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ image_url: currentPost.bild, caption: currentPost.text, access_token: fbToken })
+    body: JSON.stringify({ image_url: bildUrl, caption: currentPost.text, access_token: fbToken })
   });
   const container = await r1.json();
-  if (container.error) throw new Error('Instagram: ' + container.error.message);
+  if (container.error) {
+    // Om JPG inte fungerade, prova original-URL:en
+    if (bildUrl !== currentPost.bild) {
+      const r1b = await fetch(`https://graph.facebook.com/v22.0/${igId}/media`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image_url: currentPost.bild, caption: currentPost.text, access_token: fbToken })
+      });
+      const container2 = await r1b.json();
+      if (container2.error) throw new Error('Instagram: ' + container2.error.message);
+      const r2b = await fetch(`https://graph.facebook.com/v22.0/${igId}/media_publish`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ creation_id: container2.id, access_token: fbToken })
+      });
+      const result2 = await r2b.json();
+      if (result2.error) throw new Error('Instagram: ' + result2.error.message);
+      return result2.id || 'OK';
+    }
+    throw new Error('Instagram: ' + container.error.message);
+  }
   const r2 = await fetch(`https://graph.facebook.com/v22.0/${igId}/media_publish`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
