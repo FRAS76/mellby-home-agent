@@ -235,8 +235,9 @@
       <img id="previewImg" alt="Inläggsbild" />
     </div>
     <div class="preview-body">
-      <div class="preview-text" id="previewText">—</div>
+      <div class="preview-text" id="previewText" contenteditable="false" style="outline:none;">—</div>
       <div class="preview-meta" id="previewMeta"></div>
+      <div id="editHint" style="display:none; font-size:11px; color:#aaa; margin-top:8px;">✏️ Klicka på texten för att redigera</div>
     </div>
   </div>
 
@@ -447,6 +448,10 @@ function resetPreview() {
   currentPost = null;
   chosenBild = null;
   document.getElementById('previewText').textContent = '—';
+  document.getElementById('previewText').contentEditable = 'false';
+  document.getElementById('previewText').style.cursor = 'default';
+  document.getElementById('previewText').style.borderBottom = 'none';
+  document.getElementById('editHint').style.display = 'none';
   document.getElementById('previewMeta').textContent = '';
   const img = document.getElementById('previewImg');
   img.style.display = 'none'; img.src = '';
@@ -584,8 +589,18 @@ async function generate() {
     if (chosenBild) parsed.bild = chosenBild;
     currentPost = parsed;
 
-    // Visa text
+    // Visa text och aktivera redigering
     document.getElementById('previewText').textContent = parsed.text;
+    document.getElementById('previewText').contentEditable = 'true';
+    document.getElementById('previewText').style.cursor = 'text';
+    document.getElementById('previewText').style.borderBottom = '1px dashed #ccc';
+    document.getElementById('previewText').style.paddingBottom = '4px';
+    document.getElementById('editHint').style.display = 'block';
+
+    // Synka redigeringar tillbaka till currentPost i realtid
+    document.getElementById('previewText').oninput = function() {
+      if (currentPost) currentPost.text = this.textContent;
+    };
 
     // Visa bild
     if (parsed.bild) {
