@@ -595,7 +595,10 @@ async function generate() {
         document.getElementById('imgPh').style.display = 'none';
       };
       img.onerror = () => {
-        document.getElementById('imgPh').textContent = 'Kunde inte ladda bilden. Kontrollera URL:en.';
+        // CORS-fel från GitHub Pages – visa bildnamnet istället
+        document.getElementById('imgPh').textContent = '🖼 Bild vald: ' + parsed.bild.split('/').pop() + '\n(Förhandsgranskning ej tillgänglig från GitHub Pages – bilden publiceras korrekt på FB/Instagram)';
+        document.getElementById('imgPh').style.display = 'flex';
+        img.style.display = 'none';
       };
       img.src = parsed.bild;
     }
